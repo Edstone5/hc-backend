@@ -9,7 +9,7 @@ export class TokenService {
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: '2h',
+        expiresIn: '15m',
       }
     );
   }
