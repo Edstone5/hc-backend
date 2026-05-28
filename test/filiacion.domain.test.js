@@ -353,6 +353,52 @@ describe('FiliacionAggregate', () => {
   });
 });
 
+describe('IdHistoriaClinicaVO — anchors de regex (kills ^ y $ mutants)', () => {
+  const MSG = 'La historia clinica debe ser un UUID v4 valido';
+
+  it('lanza para UUID con carácter extra al inicio (kills ^ anchor)', () => {
+    expect(
+      () => new IdHistoriaClinicaVO('x550e8400-e29b-41d4-a716-446655440000')
+    ).toThrow(MSG);
+  });
+
+  it('lanza para UUID con carácter extra al final (kills $ anchor)', () => {
+    expect(
+      () => new IdHistoriaClinicaVO('550e8400-e29b-41d4-a716-446655440000x')
+    ).toThrow(MSG);
+  });
+});
+
+describe('FiliacionAggregate — normalizeText vacío y trim (kills mutants)', () => {
+  const validId = '550e8400-e29b-41d4-a716-446655440000';
+
+  it('campo raza con cadena vacía convierte a null en params[1]', () => {
+    const agg = new FiliacionAggregate({ id_historia: validId, raza: '' });
+    expect(agg.obtenerParametros()[1]).toBeNull();
+  });
+
+  it('campo raza con espacios se trimea antes de almacenarse en params[1]', () => {
+    const agg = new FiliacionAggregate({
+      id_historia: validId,
+      raza: '  Mestizo  ',
+    });
+    expect(agg.obtenerParametros()[1]).toBe('Mestizo');
+  });
+
+  it('campo lugar con null produce null en params[3]', () => {
+    const agg = new FiliacionAggregate({ id_historia: validId, lugar: null });
+    expect(agg.obtenerParametros()[3]).toBeNull();
+  });
+
+  it('nombre_conyuge con cadena vacía produce null en params[5]', () => {
+    const agg = new FiliacionAggregate({
+      id_historia: validId,
+      nombre_conyuge: '',
+    });
+    expect(agg.obtenerParametros()[5]).toBeNull();
+  });
+});
+
 describe('Whitelist Sexo (casos permitidos y no permitidos)', () => {
   it('acepta cada valor permitido individualmente', () => {
     const allowed = ['M', 'F', 'Masculino', 'Femenino', 'O'];
