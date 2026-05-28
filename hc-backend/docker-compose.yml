@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  # --- Backend ---
+  backend:
+    build: ./hc-backend
+    ports:
+      - '3000:3000'
+    environment:
+      # Usamos la URL de NeonDB que tienes en tu .env
+      - DATABASE_URL=postgresql://neondb_owner:npg_mGCahxcU13sw@ep-raspy-resonance-adi83erh-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+      # Tus claves JWT (cópialas de tu .env o crea nuevas)
+      - JWT_SECRET=your_jwt_secret_key
+      - JWT_REFRESH_SECRET=your_jwt_refresh_secret_key
+      - PORT=3000
+    volumes:
+      - ./hc-backend:/app
+      - /app/node_modules
+
+  # --- Frontend ---
+  frontend:
+    build: ./hc-frontend
+    ports:
+      - '5173:5173'
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+    volumes:
+      - ./hc-frontend:/app
+      - /app/node_modules

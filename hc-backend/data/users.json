@@ -1,0 +1,82 @@
+[
+  {
+    "id_usuario": 1,
+    "nombre": "Carlos",
+    "apellido": "Fernandez",
+    "dni": "74589632",
+    "email": "cfernandez@unjbg.edu.pe",
+    "telefono": "987654321",
+    "direccion": "Av. San Martín 123",
+    "rol": "profesor"
+  },
+  {
+    "id_usuario": 2,
+    "nombre": "María",
+    "apellido": "Lopez",
+    "dni": "75963214",
+    "email": "mlopez@unjbg.edu.pe",
+    "telefono": "912345678",
+    "direccion": "Jr. Tacna 456",
+    "rol": "usuario"
+  },
+  {
+    "id_usuario": 3,
+    "nombre": "Luis",
+    "apellido": "Quispe",
+    "dni": "76521489",
+    "email": "lquispe@unjbg.edu.pe",
+    "telefono": "901234567",
+    "direccion": "Calle Grau 789",
+    "rol": "usuario"
+  },
+  {
+    "id_usuario": 4,
+    "nombre": "Ana",
+    "apellido": "Torres",
+    "dni": "78451236",
+    "email": "atorres@unjbg.edu.pe",
+    "telefono": "987321654",
+    "direccion": "Av. Bolognesi 456",
+    "rol": "profesor"
+  },
+  {
+    "id_usuario": 5,
+    "nombre": "Jorge",
+    "apellido": "Ramirez",
+    "dni": "78965412",
+    "email": "jramirez@unjbg.edu.pe",
+    "telefono": "932165478",
+    "direccion": "Calle Moquegua 321",
+    "rol": "usuario"
+  },
+  {
+    "id_usuario": 6,
+    "nombre": "Elena",
+    "apellido": "Cruz",
+    "dni": "70124589",
+    "email": "ecruz@unjbg.edu.pe",
+    "telefono": "945236871",
+    "direccion": "Av. Arequipa 654",
+    "rol": "usuario"
+  },
+  {
+    "id_usuario": 7,
+    "nombre": "Pedro",
+    "apellido": "Soto",
+    "dni": "71245896",
+    "email": "psoto@unjbg.edu.pe",
+    "telefono": "987456123",
+    "direccion": "Jr. Arica 852",
+    "rol": "profesor"
+  },
+  {
+    "id_usuario": 8,
+    "nombre": "Lucía",
+    "apellido": "Valdez",
+    "dni": "72589641",
+    "email": "lvaldez@unjbg.edu.pe",
+    "telefono": "976541238",
+    "direccion": "Av. Colonial 741",
+    "rol": "usuario"
+  }
+]
