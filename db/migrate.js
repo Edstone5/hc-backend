@@ -1,0 +1,165 @@
+/**
+ * Runner de migraciones del odontograma NTS N° 150 (migraciones 002-005).
+ *
+ * Aplica de una sola vez, sobre una BD ya inicializada (init.sql), los cambios
+ * de los Bloques 1-5:
+ *   002 — columna `tipo` en odontograma_entrada + tabla odontograma_svg
+ *   003 — columna `codigo_hallazgo` en odontograma_entrada
+ *   004 — tabla iho_s (IHO-S)
+ *   005 — tabla epb (Examen Periodontal Básico)
+ *
+ * Es DIALECT-AWARE (MySQL / PostgreSQL, según DATABASE_URL en db.js) e
+ * IDEMPOTENTE: tolera los errores de "ya existe" para poder re-ejecutarse sin
+ * romper. Si la BD se creó desde init.sql actualizado, este runner no hará nada
+ * (todo existe) y terminará igual con éxito.
+ *
+ * Uso:
+ *   npm run db:migrate
+ *   (lee DATABASE_URL del entorno, igual que el resto del backend)
+ */
+import pool, { testConnection } from './db.js';
+
+const isMysql = pool.dialect === 'mysql';
+
+// Helpers de tipos por dialecto.
+const TEXT_LARGE = isMysql ? 'LONGTEXT' : 'TEXT';
+const DT = isMysql ? 'DATETIME' : 'TIMESTAMP';
+const DEF_DATE = isMysql ? 'DEFAULT (CURRENT_DATE)' : 'DEFAULT CURRENT_DATE';
+// COMMENT inline solo es válido en MySQL.
+const C = (txt) => (isMysql ? ` COMMENT '${txt}'` : '');
+
+// ¿El error indica que el objeto ya existe? (idempotencia)
+function esYaExiste(err) {
+  const msg = String(err?.message || '').toLowerCase();
+  return (
+    msg.includes('already exists') ||
+    msg.includes('duplicate column') ||
+    msg.includes('duplicate key name') ||
+    msg.includes('exists') ||
+    err?.code === 'ER_DUP_FIELDNAME' ||
+    err?.code === 'ER_DUP_KEYNAME' ||
+    err?.code === '42701' || // pg: duplicate_column
+    err?.code === '42P07' // pg: duplicate_table
+  );
+}
+
+// Migraciones como lista de pasos {nombre, sql}.
+const PASOS = [
+  // ── 002: tipo + odontograma_svg ──────────────────────────────────────────
+  {
+    nombre: '002 · odontograma_entrada.tipo',
+    sql: `ALTER TABLE odontograma_entrada
+            ADD COLUMN tipo VARCHAR(12) NOT NULL DEFAULT 'EVOLUCION'${C('INICIAL|EVOLUCION (RF-06)')}`,
+  },
+  {
+    nombre: '002 · tabla odontograma_svg',
+    sql: `CREATE TABLE IF NOT EXISTS odontograma_svg (
+            id_svg           CHAR(36)    NOT NULL PRIMARY KEY,
+            id_historia      CHAR(36)    NOT NULL,
+            tipo             VARCHAR(12) NOT NULL${C('INICIAL|EVOLUCION')},
+            svg              ${TEXT_LARGE} NOT NULL${C('SVG serializado (XMLSerializer)')},
+            especificaciones TEXT        NULL,
+            observaciones    TEXT        NULL,
+            fecha            DATE        NOT NULL ${DEF_DATE},
+            id_usuario       CHAR(36)    NULL,
+            created_at       ${DT}    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (id_historia) REFERENCES historia_clinica(id_historia) ON DELETE CASCADE,
+            FOREIGN KEY (id_usuario)  REFERENCES usuario(id_usuario) ON DELETE SET NULL
+          )`,
+  },
+  {
+    nombre: '002 · idx_odonto_svg_historia',
+    sql: `CREATE INDEX idx_odonto_svg_historia ON odontograma_svg (id_historia, tipo, created_at)`,
+  },
+
+  // ── 003: codigo_hallazgo ─────────────────────────────────────────────────
+  {
+    nombre: '003 · odontograma_entrada.codigo_hallazgo',
+    sql: `ALTER TABLE odontograma_entrada
+            ADD COLUMN codigo_hallazgo VARCHAR(10) NULL${C('Código catálogo SIHCE/NTS-150')}`,
+  },
+  {
+    nombre: '003 · idx_odonto_hallazgo',
+    sql: `CREATE INDEX idx_odonto_hallazgo ON odontograma_entrada (codigo_hallazgo)`,
+  },
+
+  // ── 004: iho_s ───────────────────────────────────────────────────────────
+  {
+    nombre: '004 · tabla iho_s',
+    sql: `CREATE TABLE IF NOT EXISTS iho_s (
+            id_iho        CHAR(36)     NOT NULL PRIMARY KEY,
+            id_historia   CHAR(36)     NOT NULL,
+            fecha         DATE         NOT NULL ${DEF_DATE},
+            valores       TEXT         NOT NULL${C('JSON: [{diente, db, dc}] 6 dientes índice')},
+            idb           DECIMAL(4,2) NOT NULL${C('Índice de detritos (promedio DB)')},
+            icalc         DECIMAL(4,2) NOT NULL${C('Índice de cálculo (promedio DC)')},
+            ihos          DECIMAL(4,2) NOT NULL${C('IHO-S total = idb + icalc')},
+            clasificacion VARCHAR(20)  NOT NULL${C('Bueno|Regular|Malo')},
+            id_usuario    CHAR(36)     NULL,
+            created_at    ${DT}     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (id_historia) REFERENCES historia_clinica(id_historia) ON DELETE CASCADE,
+            FOREIGN KEY (id_usuario)  REFERENCES usuario(id_usuario) ON DELETE SET NULL
+          )`,
+  },
+  {
+    nombre: '004 · idx_ihos_historia',
+    sql: `CREATE INDEX idx_ihos_historia ON iho_s (id_historia, created_at)`,
+  },
+
+  // ── 005: epb ─────────────────────────────────────────────────────────────
+  {
+    nombre: '005 · tabla epb',
+    sql: `CREATE TABLE IF NOT EXISTS epb (
+            id_epb       CHAR(36)  NOT NULL PRIMARY KEY,
+            id_historia  CHAR(36)  NOT NULL,
+            fecha        DATE      NOT NULL ${DEF_DATE},
+            valores      TEXT      NOT NULL${C('JSON: [{sextante, codigo, furca, movilidad}]')},
+            codigo_max   SMALLINT  NOT NULL${C('Peor código OMS (0-4)')},
+            id_usuario   CHAR(36)  NULL,
+            created_at   ${DT}  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (id_historia) REFERENCES historia_clinica(id_historia) ON DELETE CASCADE,
+            FOREIGN KEY (id_usuario)  REFERENCES usuario(id_usuario) ON DELETE SET NULL
+          )`,
+  },
+  {
+    nombre: '005 · idx_epb_historia',
+    sql: `CREATE INDEX idx_epb_historia ON epb (id_historia, created_at)`,
+  },
+];
+
+async function migrar() {
+  await testConnection();
+  console.log(
+    `\n▶ Aplicando migraciones odontograma NTS-150 (dialecto: ${pool.dialect})\n`
+  );
+
+  let aplicados = 0;
+  let omitidos = 0;
+
+  for (const paso of PASOS) {
+    try {
+      await pool.query(paso.sql);
+      aplicados++;
+      console.log(`  ✅ ${paso.nombre}`);
+    } catch (err) {
+      if (esYaExiste(err)) {
+        omitidos++;
+        console.log(`  ⏭️  ${paso.nombre} (ya existía)`);
+      } else {
+        console.error(`  ❌ ${paso.nombre}\n     ${err.message}`);
+        throw err;
+      }
+    }
+  }
+
+  console.log(
+    `\n✔ Migración completada — ${aplicados} aplicados, ${omitidos} omitidos.\n`
+  );
+}
+
+migrar()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error('\n✖ Migración abortada:', err.message, '\n');
+    process.exit(1);
+  });

@@ -16,7 +16,8 @@
     "prepare": "husky",
     "start": "node api.js",
     "start:prod": "NODE_ENV=production node api.js",
-    "db:init": "mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME < db/init.sql"
+    "db:init": "mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME < db/init.sql",
+    "db:migrate": "node db/migrate.js"
   },
   "repository": {
     "type": "git",
