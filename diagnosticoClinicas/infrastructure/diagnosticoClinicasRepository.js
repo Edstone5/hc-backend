@@ -84,7 +84,9 @@ class DiagnosticoClinicasRepository extends IDiagnosticoClinicasRepository {
       tratamiento,
       pronostico,
       alumnoTratante,
-      idUsuario,
+      // idUsuario se valida en el dominio (autenticación) pero NO se persiste:
+      // la tabla `diagnostico` no tiene columna id_usuario (el responsable se
+      // registra en alumno_tratante). Escribirla causaba el fallo del guardado.
     ] = params;
 
     // Check if a row already exists for this historia+tipo
@@ -98,8 +100,8 @@ class DiagnosticoClinicasRepository extends IDiagnosticoClinicasRepository {
         `UPDATE diagnostico SET fecha=$1, clinica_respuesta=$2, descripcion=$3, examenes_auxiliares=$4,
          interconsulta_detalle=$5, fecha_interconsulta=$6, clinica_interconsulta=$7,
          diagnostico_definitivo=$8, tratamiento_realizar=$9, pronostico=$10,
-         alumno_tratante=$11, id_usuario=$12
-         WHERE id_historia=$13 AND tipo='definitivo_clinicas'`,
+         alumno_tratante=$11
+         WHERE id_historia=$12 AND tipo='definitivo_clinicas'`,
         [
           fecha,
           clinicaRespuesta,
@@ -112,7 +114,6 @@ class DiagnosticoClinicasRepository extends IDiagnosticoClinicasRepository {
           tratamiento,
           pronostico,
           alumnoTratante,
-          idUsuario,
           idHistory,
         ]
       );
@@ -120,8 +121,8 @@ class DiagnosticoClinicasRepository extends IDiagnosticoClinicasRepository {
       await pool.query(
         `INSERT INTO diagnostico (id_diagnostico, id_historia, tipo, fecha, clinica_respuesta, descripcion,
          examenes_auxiliares, interconsulta_detalle, fecha_interconsulta, clinica_interconsulta,
-         diagnostico_definitivo, tratamiento_realizar, pronostico, alumno_tratante, id_usuario)
-         VALUES ($1,$2,'definitivo_clinicas',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+         diagnostico_definitivo, tratamiento_realizar, pronostico, alumno_tratante)
+         VALUES ($1,$2,'definitivo_clinicas',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
         [
           randomUUID(),
           idHistory,
@@ -136,7 +137,6 @@ class DiagnosticoClinicasRepository extends IDiagnosticoClinicasRepository {
           tratamiento,
           pronostico,
           alumnoTratante,
-          idUsuario,
         ]
       );
     }
