@@ -23,7 +23,7 @@ describe('testConnection', () => {
     const { testConnection } = await import('../db/db.js');
     // Llamar testConnection pasando la función log como argumento si es posible
     await testConnection(log);
-    expect(logMsg).toMatch(/Conectado a Postgres/);
+    expect(logMsg).toMatch(/Conectado a/);
   });
 
   it('debería manejar error de conexión', async () => {

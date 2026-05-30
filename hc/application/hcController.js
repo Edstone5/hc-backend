@@ -155,6 +155,57 @@ export class HcController {
     }
   };
 
+  transferirHistoriaClinica = async (req, res) => {
+    try {
+      const idHistoria = req.params.id;
+      const { idNuevoEstudiante, razon } = req.body;
+      if (!idNuevoEstudiante) {
+        return res.status(400).json({ error: 'idNuevoEstudiante requerido' });
+      }
+      if (!razon || !razon.trim()) {
+        return res
+          .status(400)
+          .json({ error: 'razon requerida para la transferencia' });
+      }
+      await repo.transferirHistoria(idHistoria, idNuevoEstudiante, razon);
+
+      // Notificar a ambos involucrados
+      const { crearNotificacion } = await import(
+        '../../notificacion/application/notificacionController.js'
+      );
+      await crearNotificacion({
+        idDestinatario: idNuevoEstudiante,
+        titulo: 'Historia clínica transferida a ti',
+        mensaje: `Se te ha asignado la HC-${idHistoria.slice(0, 8)}. Motivo: ${razon}`,
+        tipo: 'transfer',
+        idReferencia: idHistoria,
+      });
+
+      return res
+        .status(200)
+        .json({ message: 'Historia clínica transferida correctamente' });
+    } catch (err) {
+      return res
+        .status(500)
+        .json({ error: err.message || 'Error al transferir' });
+    }
+  };
+
+  buscarHistoriasClinicas = async (req, res) => {
+    try {
+      const { q, year } = req.query;
+      // Admins ven todo; estudiantes solo sus propias HCs
+      const idEstudiante =
+        req.user?.role === 'estudiante' ? req.user.id : undefined;
+      const historias = await repo.buscarHistorias({ q, year, idEstudiante });
+      return res.status(200).json(historias);
+    } catch (err) {
+      return res
+        .status(500)
+        .json({ error: err.message || 'Error en la búsqueda' });
+    }
+  };
+
   asignarPacienteAHistoriaClinica = async (req, res) => {
     try {
       const agregado = this.construirAgregadoAsignacion(req);

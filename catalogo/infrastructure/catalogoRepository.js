@@ -1,26 +1,17 @@
-/**
- * CatalogoRepository (Adaptador Secundario)
- * Encapsula las consultas SQL a PostgreSQL usando `pool.query`.
- */
+import { ICatalogoRepository } from '../domain/catalogoDomain.js';
 import pool from '../../db/db.js';
 
-class CatalogoRepository {
-  /**
-   * Listar todas las filas de un catálogo validado.
-   * @param {CatalogoAggregate} aggregate
-   */
+/**
+ * CatalogoRepository (Adaptador Secundario) para PostgreSQL.
+ * Implementa {@link ICatalogoRepository}.
+ */
+class CatalogoRepository extends ICatalogoRepository {
   async listar(aggregate) {
     const [nombre] = aggregate.obtenerParametros();
-    // `nombre` está validado en el dominio; usamos plantilla para tabla.
     const result = await pool.query(`SELECT * FROM ${nombre}`);
     return result.rows;
   }
 
-  /**
-   * Obtener nombre (o descripción) por id desde un catálogo validado.
-   * @param {CatalogoAggregate} aggregate
-   * @param {IdPositiveValueObject} idVO
-   */
   async obtenerNombre(aggregate, idVO) {
     const [nombre] = aggregate.obtenerParametros();
     const result = await pool.query(

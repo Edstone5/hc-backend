@@ -1,25 +1,20 @@
 /**
  * Adaptador Secundario: AuthRepository
  * Encapsula la consulta SQL necesaria para autenticación.
+ * Implementa {@link IAuthRepository}.
  */
+import { IAuthRepository } from '../domain/authDomain.js';
 import pool from '../../db/db.js';
 
-class AuthRepository {
-  /**
-   * Obtiene datos del usuario por `userCode` usando la función SQL de login.
-   * @param {AuthAggregate} agregado
-   * @returns {Object|null} fila del usuario o null
-   */
+class AuthRepository extends IAuthRepository {
   async obtenerUsuarioPorUserCode(agregado) {
-    const params = agregado.obtenerParametros();
+    const [userCode] = agregado.obtenerParametros();
+    const col = pool.dialect === 'mysql' ? 'user_code' : 'codigo_usuario';
     const result = await pool.query(
-      'SELECT * FROM fn_obtener_usuario_login($1)',
-      params
+      `SELECT * FROM usuario WHERE ${col} = $1 LIMIT 1`,
+      [userCode]
     );
-    if (result.rows.length === 0) {
-      return null;
-    }
-    return result.rows[0];
+    return result.rows[0] || null;
   }
 }
 

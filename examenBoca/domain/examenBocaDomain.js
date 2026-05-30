@@ -253,3 +253,32 @@ export class ExamenBocaAggregate {
     return this.#idHistoria.value;
   }
 }
+
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Examen Clínico de Boca.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IExamenBocaRepository {
+  /**
+   * Recupera el examen de boca de una historia clínica.
+   * @param {string} _idHistoria
+   * @returns {Promise<Object|null>}
+   * @abstract
+   */
+  async getByHistoria(_idHistoria) {
+    throw new Error('IExamenBocaRepository.getByHistoria() no implementado');
+  }
+
+  /**
+   * Actualiza el examen de boca de una historia clínica.
+   * @param {ExamenBocaAggregate} _agregado
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async update(_agregado) {
+    throw new Error('IExamenBocaRepository.update() no implementado');
+  }
+}

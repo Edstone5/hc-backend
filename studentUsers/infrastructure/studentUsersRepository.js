@@ -1,15 +1,11 @@
-/**
- * Adaptador Secundario: StudentUsersRepository
- * Encapsula consultas SQL usando `pool.query`.
- */
+import { IStudentUsersRepository } from '../domain/studentUsersDomain.js';
 import pool from '../../db/db.js';
 
-class StudentUsersRepository {
-  /**
-   * Lista los usuarios con rol proporcionado en el agregado.
-   * @param {StudentUsersAggregate} agregado
-   * @returns {Array} filas de usuario
-   */
+/**
+ * Adaptador Secundario: StudentUsersRepository para PostgreSQL.
+ * Implementa {@link IStudentUsersRepository}.
+ */
+class StudentUsersRepository extends IStudentUsersRepository {
   async listarEstudiantes(agregado) {
     const params = agregado.obtenerParametros();
     const result = await pool.query(

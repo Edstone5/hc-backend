@@ -1,0 +1,475 @@
+================================================================================
+                    MUTATION TESTING - PROYECTO HC-BACKEND
+                          DOCUMENTO COMPILADO
+================================================================================
+
+FECHA: 2026-05-28
+BRANCH: testeo1
+REPOSITORIO: https://github.com/Edstone5/hc-backend.git
+
+================================================================================
+1. ARCHIVOS PRINCIPALES RELACIONADOS CON MUTACION
+================================================================================
+
+1.1 CONFIGURACION DE STRYKER
+────────────────────────────────────────────────────────────────────────────
+Ruta: stryker.config.mjs
+
+- Test runner utilizado: Vitest
+- Archivo de configuración de vitest: vitest.config.js
+
+ARCHIVOS MUTADOS (TARGET MODULES):
+  • filiacion/domain/filiacionDomain.js
+  • enfermedadActual/domain/enfermedadActualDomain.js
+  • motivoConsulta/domain/motivoConsultaDomain.js
+  • antecedente/domain/antecedenteDomain.js
+  • examenGeneral/domain/examenGeneralDomain.js
+
+REPORTE GENERADO: reports/mutation/mutation.html
+
+QUALITY GATES (THRESHOLDS):
+  - High: 80%
+  - Low: 60%
+  - Break: 0%
+
+CONFIGURACION DE PERFORMANCE:
+  - Concurrencia: 4
+  - Timeout: 10000 ms (10 segundos)
+  - Timeout Factor: 1.5
+  - Coverage Analysis: perTest
+
+REPORTERS:
+  - progress
+  - html
+  - clear-text
+
+
+1.2 DEPENDENCIAS PARA MUTATION TESTING
+────────────────────────────────────────────────────────────────────────────
+Ruta: package.json
+
+DevDependencies requeridas:
+  "@stryker-mutator/core": "^9.6.1"
+  "@stryker-mutator/vitest-runner": "^9.6.1"
+
+Otras dependencias de testing:
+  "vitest": "^4.0.15"
+  "@vitest/coverage-v8": "^4.0.15"
+  "c8": "^10.1.3"
+  "supertest": "^7.2.2"
+
+
+1.3 TESTS PARA MUTATION TESTING
+────────────────────────────────────────────────────────────────────────────
+Ruta: test/filiacion.domain.test.js
+
+MODULOS TESTEADOS:
+
+1. IdHistoriaClinicaVO (Value Object)
+   - Validación: UUID v4
+   - Normalización: minúsculas, trim de espacios
+   - Casos límite: cadena vacía, espacios, null, undefined
+   - Regex anchors: ^ y $ para evitar caracteres extras
+
+2. EdadClinicaVO (Value Object)
+   - Validación: entero entre 0 y 130
+   - Tipos aceptados: number, string numeric
+   - Casos límite: -1 (falla), 0 (pasa), 130 (pasa), 131 (falla)
+   - Especial: no acepta decimales ni texto no numérico
+   - Nullable: null, undefined, '' → .value === null
+
+3. FechaClinicaVO (Value Object)
+   - Validación: ISO 8601
+   - Mensajes personalizables por tipo (nacimiento, elaboración)
+   - Normalización: toISOString()
+   - Nullable: null, undefined, '' → .value === null
+
+4. FiliacionAggregate (Agregado de Dominio)
+   - Composición: IdHistoriaClinicaVO, EdadClinicaVO, FechaClinicaVO
+   - Método crítico: obtenerParametros()
+   - Normalización de texto: trim() y conversión de vacíos a null
+   - Inmutabilidad: Object.freeze()
+
+
+================================================================================
+2. ESTRATEGIAS DE TESTING PARA MUTATION
+================================================================================
+
+2.1 ANALISIS DE VALORES LIMITE (BOUNDARY VALUE ANALYSIS)
+────────────────────────────────────────────────────────────────────────────
+
+EdadClinicaVO:
+  • min-1: -1 debe fallar → "La edad clinica debe ser un entero entre 0 y 130"
+  • min: 0 debe pasar
+  • max: 130 debe pasar
+  • max+1: 131 debe fallar
+
+UUIDs:
+  • Caracteres extras al inicio: 'x550e8400-...' → falla
+  • Caracteres extras al final: '...446655440000x' → falla
+
+
+2.2 INVARIANTES Y ERRORES DE DOMINIO
+────────────────────────────────────────────────────────────────────────────
+
+IdHistoriaClinicaVO:
+  ✓ Lanza si el tipo no es string
+  ✓ Lanza para patrón inválido
+  ✓ Normaliza espacios y mayúsculas
+
+EdadClinicaVO:
+  ✓ No acepta números no enteros (25.5)
+  ✓ No acepta texto no numérico
+
+FechaClinicaVO:
+  ✓ Lanza mensaje personalizado para fecha inválida
+  ✓ Normaliza ISO 8601
+
+FiliacionAggregate:
+  ✓ Propaga error de IdHistoria inválido
+  ✓ Propaga error de edad inválida
+  ✓ Propaga error de sexo no permitido
+  ✓ Propaga error de fecha inválida
+
+
+2.3 NULOS Y VACIOS (NULLABLE SEMANTICS)
+────────────────────────────────────────────────────────────────────────────
+
+EdadClinicaVO:
+  • null → .value === null
+  • undefined → .value === null
+  • '' (cadena vacía) → .value === null
+
+FechaClinicaVO:
+  • null → .value === null
+  • undefined → .value === null
+  • '' (cadena vacía) → .value === null
+
+FiliacionAggregate:
+  • raza: '' convierte a null en params[1]
+  • lugar: null produce null en params[3]
+  • nombre_conyuge: '' produce null en params[5]
+
+
+2.4 INMUTABILIDAD (OBJECT.FREEZE)
+────────────────────────────────────────────────────────────────────────────
+
+IdHistoriaClinicaVO:
+  ✓ No permite mutar la propiedad value
+  ✓ Lanza excepción en modo strict
+
+EdadClinicaVO:
+  ✓ Objetos congelados no permiten mutación
+  ✓ vo.value = 99 lanza excepción
+
+FechaClinicaVO:
+  ✓ freeze impide asignar value
+
+FiliacionAggregate:
+  ✓ Object.freeze impide añadir o mutar propiedades públicas
+  ✓ agg.idHistoria = 'otro' lanza excepción
+
+
+2.5 NORMALIZACION DE TEXTO
+────────────────────────────────────────────────────────────────────────────
+
+Función normalizeText():
+  • Trimea espacios al inicio y final
+  • Convierte cadenas vacías a null
+  • Convierte undefined a null
+
+Ejemplos en FiliacionAggregate:
+  • raza: '  Mestizo  ' → 'Mestizo'
+  • raza: '' → null
+  • lugar: '  Tacna  ' → 'Tacna'
+  • nombre_conyuge: '' → null
+
+
+2.6 WHITELIST DE VALORES (SEXO CLINICO)
+────────────────────────────────────────────────────────────────────────────
+
+Valores permitidos:
+  • 'M'
+  • 'F'
+  • 'Masculino'
+  • 'Femenino'
+  • 'O'
+
+Valores rechazados:
+  • 'X' → Error: "El sexo clinico no tiene un valor permitido"
+  • 'masculino' (minúscula) → Error: "El sexo clinico no tiene un valor permitido"
+
+Estrategia de test:
+  ✓ Acepta cada valor permitido individualmente
+  ✓ Rechaza al menos dos valores no permitidos
+
+
+2.7 METODO OBTENERPARAMETROS()
+────────────────────────────────────────────────────────────────────────────
+
+Array de 20 parámetros en orden exacto:
+
+[0] idHistoria.value (UUID normalizado)
+[1] raza (normalizado o null)
+[2] fechaNacimiento.value (ISO 8601 o null)
+[3] lugar (normalizado o null)
+[4] estadoCivil (normalizado o null)
+[5] nombreConyuge (normalizado o null)
+[6] ocupacion (normalizado o null)
+[7] lugarProcedencia (normalizado o null)
+[8] tiempoResidenciaTacna (normalizado o null)
+[9] direccion (normalizado o null)
+[10] ultimaVisitaDentista (ISO 8601 o null)
+[11] motivoVisitaDentista (normalizado o null)
+[12] ultimaVisitaMedico (ISO 8601 o null)
+[13] motivoVisitaMedico (normalizado o null)
+[14] contactoEmergencia (normalizado o null)
+[15] telefonoEmergencia (normalizado o null)
+[16] acompaniante (normalizado o null)
+[17] edad.value (número o null)
+[18] sexo (valor permitido o null)
+[19] fechaElaboracion.value (ISO 8601)
+
+Test crítico:
+  • Validar exactitud de tipos: número 30 vs string '30'
+  • Validar null en posiciones específicas
+  • Validar orden preciso de parámetros
+
+
+================================================================================
+3. CASOS DE PRUEBA CRITICOS PARA MUTATION TESTING
+================================================================================
+
+3.1 REGEX ANCHORS (^ Y $)
+────────────────────────────────────────────────────────────────────────────
+Objetivo: Detectar si se eliminan los anchors de regex
+
+Test 1: UUID con carácter extra al inicio
+  Input: 'x550e8400-e29b-41d4-a716-446655440000'
+  Resultado: Debe lanzar "La historia clinica debe ser un UUID v4 valido"
+
+Test 2: UUID con carácter extra al final
+  Input: '550e8400-e29b-41d4-a716-446655440000x'
+  Resultado: Debe lanzar "La historia clinica debe ser un UUID v4 valido"
+
+
+3.2 BOUNDARY VALUES
+────────────────────────────────────────────────────────────────────────────
+
+EdadClinicaVO:
+  • -1 (min-1): Debe fallar
+  • 0 (min): Debe pasar
+  • 130 (max): Debe pasar
+  • 131 (max+1): Debe fallar
+
+Detecta mutantes como:
+  • Cambio de <= a < en validaciones
+  • Cambio de >= a > en validaciones
+
+
+3.3 VALIDACION DE TIPOS
+────────────────────────────────────────────────────────────────────────────
+
+IdHistoriaClinicaVO:
+  • Entrada: 123 (número)
+  • Esperado: Lanza excepción
+
+EdadClinicaVO:
+  • Entrada: 25.5 (decimal)
+  • Esperado: Lanza excepción
+
+  • Entrada: 'veinticinco' (texto)
+  • Esperado: Lanza excepción
+
+
+3.4 NORMALIZACION Y TRIM
+────────────────────────────────────────────────────────────────────────────
+
+Test 1: UUID con espacios y mayúsculas
+  Input: '  550E8400-E29B-41D4-A716-446655440000  '
+  Output: '550e8400-e29b-41d4-a716-446655440000'
+
+Test 2: Texto con espacios
+  Input: '  Mestizo  '
+  Output: 'Mestizo'
+
+Test 3: Cadena vacía
+  Input: ''
+  Output: null
+
+
+3.5 MUTANTES DETECTADOS POR TESTS
+────────────────────────────────────────────────────────────────────────────
+
+1. Eliminación de Object.freeze()
+   → Inmutabilidad tests fallarían
+
+2. Cambio de operadores (< a <=, > a >=)
+   → Boundary value tests fallarían
+
+3. Eliminación de trim()
+   → Normalization tests fallarían
+
+4. Cambio de null a undefined
+   → Nullable semantics tests fallarían
+
+5. Eliminación de regex anchors (^ y $)
+   → Regex anchor tests fallarían
+
+6. Orden incorrecto en obtenerParametros()
+   → obtenerParametros() tests fallarían
+
+7. Eliminación de validación de whitelist
+   → Whitelist tests fallarían
+
+
+================================================================================
+4. COMANDOS UTILES
+================================================================================
+
+4.1 MUTATION TESTING
+────────────────────────────────────────────────────────────────────────────
+
+Ejecutar mutation testing completo:
+  npm run test:mutation
+  O
+  npx stryker run
+
+Resultado: Genera reports/mutation/mutation.html
+
+
+4.2 TESTS UNITARIOS
+────────────────────────────────────────────────────────────────────────────
+
+Ejecutar todos los tests:
+  npm test
+
+Ejecutar tests en modo watch:
+  npm test -- --watch
+
+Ejecutar tests con cobertura:
+  npm test -- --coverage
+
+
+4.3 LINTING Y FORMATEO
+────────────────────────────────────────────────────────────────────────────
+
+Ejecutar linting:
+  npm run lint
+
+Auto-fix de linting issues:
+  npm run lint:fix
+
+Formatear código:
+  npm run format
+
+
+4.4 DESARROLLO
+────────────────────────────────────────────────────────────────────────────
+
+Ejecutar servidor en modo watch:
+  npm run dev
+
+Iniciar servidor:
+  npm start
+
+
+================================================================================
+5. SCRIPT NPM DISPONIBLES
+================================================================================
+
+{
+  "test": "vitest",
+  "test:mutation": "stryker run",
+  "dev": "dotenv -e .env.local -- node --watch api.js",
+  "lint": "eslint .",
+  "lint:fix": "eslint . --fix",
+  "format": "prettier --write .",
+  "prepare": "husky",
+  "start": "node api.js"
+}
+
+
+================================================================================
+6. STRUCTURE DE ARCHIVOS AFECTADOS
+================================================================================
+
+Dominios mutados:
+  filiacion/
+    └── domain/
+        └── filiacionDomain.js
+
+  enfermedadActual/
+    └── domain/
+        └── enfermedadActualDomain.js
+
+  motivoConsulta/
+    └── domain/
+        └── motivoConsultaDomain.js
+
+  antecedente/
+    └── domain/
+        └── antecedenteDomain.js
+
+  examenGeneral/
+    └── domain/
+        └── examenGeneralDomain.js
+
+Tests correspondientes:
+  test/
+    └── filiacion.domain.test.js
+
+Configuración:
+  stryker.config.mjs
+  vitest.config.js
+  package.json
+
+Reportes:
+  reports/
+    └── mutation/
+        └── mutation.html
+
+
+================================================================================
+7. CALIDAD DE MUTACION TESTING
+================================================================================
+
+Criterios de éxito (Quality Gates):
+  • High: 80% (objetivo ideal)
+  • Low: 60% (mínimo aceptable)
+  • Break: 0% (no romper si está en 0%)
+
+Estrategia de cobertura:
+  • Boundary value analysis (límites)
+  • Invariantes de dominio
+  • Nullability testing
+  • Immutability testing
+  • Regex anchor testing
+  • Type validation
+  • Normalization testing
+  • Whitelist validation
+
+
+================================================================================
+8. INFORMACION DEL PROYECTO
+================================================================================
+
+Proyecto: hc-backend (Health Care Backend)
+Repositorio: https://github.com/Edstone5/hc-backend.git
+Branch actual: testeo1
+Último commit: 254cd21 - Update mutation report
+Fecha documento: 2026-05-28
+
+Stack tecnológico:
+  • Runtime: Node.js (ES modules)
+  • Test framework: Vitest
+  • Mutation testing: Stryker
+  • Linting: ESLint
+  • Formatting: Prettier
+  • Database: PostgreSQL
+  • API: Express.js
+  • Authentication: JWT + Argon2
+
+================================================================================
+FIN DEL DOCUMENTO
+================================================================================

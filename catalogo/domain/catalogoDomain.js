@@ -88,6 +88,36 @@ class CatalogoAggregate {
   }
 }
 
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Catálogo.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class ICatalogoRepository {
+  /**
+   * Lista todos los registros de un catálogo validado.
+   * @param {CatalogoAggregate} _aggregate
+   * @returns {Promise<Array>}
+   * @abstract
+   */
+  async listar(_aggregate) {
+    throw new Error('ICatalogoRepository.listar() no implementado');
+  }
+
+  /**
+   * Obtiene el nombre/descripción de un registro por su id dentro de un catálogo.
+   * @param {CatalogoAggregate} _aggregate
+   * @param {IdPositiveValueObject} _idVO
+   * @returns {Promise<string|null>}
+   * @abstract
+   */
+  async obtenerNombre(_aggregate, _idVO) {
+    throw new Error('ICatalogoRepository.obtenerNombre() no implementado');
+  }
+}
+
 export {
   DomainError,
   CatalogNameValueObject,

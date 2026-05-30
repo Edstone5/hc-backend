@@ -254,3 +254,42 @@ export class FiliacionAggregate {
     return this.#idHistoria.value;
   }
 }
+
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Filiación.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IFiliacionRepository {
+  /**
+   * Persiste una nueva filiación.
+   * @param {FiliacionAggregate} _agregado
+   * @returns {Promise<{success: boolean, id_historia: string}>}
+   * @abstract
+   */
+  async create(_agregado) {
+    throw new Error('IFiliacionRepository.create() no implementado');
+  }
+
+  /**
+   * Recupera la filiación de una historia clínica.
+   * @param {string} _id_historia
+   * @returns {Promise<Object|undefined>}
+   * @abstract
+   */
+  async getByHistoria(_id_historia) {
+    throw new Error('IFiliacionRepository.getByHistoria() no implementado');
+  }
+
+  /**
+   * Actualiza la filiación de una historia clínica existente.
+   * @param {FiliacionAggregate} _agregado
+   * @returns {Promise<{success: boolean, id_historia: string}>}
+   * @abstract
+   */
+  async update(_agregado) {
+    throw new Error('IFiliacionRepository.update() no implementado');
+  }
+}

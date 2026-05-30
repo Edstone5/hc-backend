@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s # Cada cuánto Prometheus raspa las métricas
+  evaluation_interval: 15s # Cada cuánto evalúa las reglas de alerta
+
+# ── Reglas de alerta (opcional: crear hc_alerts.yml para prod) ───────────────
+# rule_files:
+#   - "hc_alerts.yml"
+
+# ── Jobs de scrape ────────────────────────────────────────────────────────────
+scrape_configs:
+  # Prometheus se raspa a sí mismo
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Backend HC — expone /metrics en formato Prometheus
+  - job_name: 'hc-backend'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['backend:3000'] # nombre del servicio en docker-compose
+    # En caso de querer scrape autenticado se puede agregar:
+    # bearer_token: 'TU_TOKEN'

@@ -1,0 +1,16 @@
+# /etc/systemd/system/hc-reconcile.timer
+# Ejecuta el agente GitOps cada 5 minutos
+[Unit]
+Description=HC Backend — GitOps reconciliation timer
+Requires=hc-reconcile.service
+
+[Timer]
+# Esperar 2 minutos después de arrancar el sistema
+OnBootSec=2min
+# Luego cada 5 minutos
+OnUnitActiveSec=5min
+# Si se pierde una ejecución (apagado), ejecutar al próximo boot
+Persistent=true
+
+[Install]
+WantedBy=timers.target

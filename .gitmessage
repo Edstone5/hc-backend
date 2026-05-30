@@ -1,0 +1,27 @@
+# <type>(<scope>): <descripción corta en imperativo, máx 72 chars>
+#
+# Tipos: feat | fix | docs | refactor | test | chore | ci | perf | style
+# Scopes: auth | user | patient | hc | filiacion | antecedente | catalogo
+#         examen | higiene | diagnostico | evolucion | derivacion
+#         db | docker | ci | metrics | health | swagger | deps
+#
+# Ejemplos:
+#   feat(hc): agregar endpoint para obtener borrador de historia clínica
+#   fix(auth): corregir expiración del refresh token
+#   test(catalogo): agregar tests para controller hexagonal
+#   chore(deps): actualizar prom-client a v15
+#
+# ── Cuerpo (opcional) ─────────────────────────────────────────────────────────
+# Explicar QUÉ y POR QUÉ, no CÓMO. Separa del título con línea en blanco.
+#
+# ── Footers (opcionales) ──────────────────────────────────────────────────────
+# Refs #123
+# Closes #456
+# BREAKING CHANGE: descripción del cambio incompatible
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# ✅ Reglas:
+#  - Usa imperativo en la descripción: "agregar" no "agregado" ni "se agrega"
+#  - No punto final en la primera línea
+#  - Mantén la primera línea ≤ 72 caracteres
+#  - Referencia issues: Refs #N o Closes #N

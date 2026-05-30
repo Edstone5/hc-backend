@@ -17,3 +17,4 @@ userRoutes.get('/:id', UserController.obtenerUsuarioPorId);
 
 //midddlware de admins(a futuro)
 userRoutes.get('/', UserController.listarUsuarios);
+userRoutes.patch('/:id/status', UserController.actualizarEstado);

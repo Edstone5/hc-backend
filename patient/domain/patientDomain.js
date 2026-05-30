@@ -121,6 +121,36 @@ class PatientAggregate {
   }
 }
 
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Paciente.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IPatientRepository {
+  /**
+   * Crea un nuevo paciente y devuelve su identificador generado.
+   * @param {PatientAggregate} _aggregate
+   * @returns {Promise<{id: string}>}
+   * @abstract
+   */
+  async crearPaciente(_aggregate) {
+    throw new Error('IPatientRepository.crearPaciente() no implementado');
+  }
+
+  /**
+   * Actualiza los datos de un paciente existente.
+   * @param {string} _id - UUID del paciente.
+   * @param {PatientAggregate} _aggregate
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async actualizarPaciente(_id, _aggregate) {
+    throw new Error('IPatientRepository.actualizarPaciente() no implementado');
+  }
+}
+
 export {
   DomainError,
   NombreValueObject,

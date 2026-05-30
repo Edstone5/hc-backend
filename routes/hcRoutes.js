@@ -14,6 +14,17 @@ import { MotivoConsultaController } from '../motivoConsulta/application/motivoCo
 import { AntecedenteController } from '../antecedente/application/antecedenteController.js';
 import { EnfermedadActualController } from '../enfermedadActual/application/enfermedadActualController.js';
 import { ModuloController } from '../filiacion/application/filiacionController.js';
+import { PagoController } from '../pago/application/pagoController.js';
+import { OdontogramaController } from '../odontograma/application/odontogramaController.js';
+import { PrescripcionController } from '../prescripcion/application/prescripcionController.js';
+import {
+  AdjuntoController,
+  uploadMiddleware,
+} from '../adjunto/application/adjuntoController.js';
+import { FichaOperacionController } from '../fichaOperacion/application/fichaOperacionController.js';
+import { FichaEvaluacionController } from '../fichaEvaluacion/application/fichaEvaluacionController.js';
+import { CitaController } from '../cita/application/citaController.js';
+import { AuditoriaController } from '../auditoria/application/auditoriaController.js';
 
 export const hcRoutes = Router();
 
@@ -223,3 +234,76 @@ hcRoutes.get(
   '/student/:id/adult-historias',
   ListaHcAdultosController.listarHistoriasClinicasAdultasDeEstudiante
 );
+
+// --- BÚSQUEDA DE HISTORIAS CLÍNICAS ---
+hcRoutes.get('/search', hcController.buscarHistoriasClinicas);
+
+// --- PAGOS ---
+hcRoutes.post('/:id/pago', PagoController.registrarPago);
+hcRoutes.get('/:id/pago', PagoController.consultarPorHistoria);
+
+// --- TRANSFERENCIA ---
+hcRoutes.put('/:id/transferir', hcController.transferirHistoriaClinica);
+
+// --- AUDITORÍA POR HC ---
+hcRoutes.get('/:id/auditoria', AuditoriaController.listarPorHistoria);
+
+// --- ODONTOGRAMA ---
+hcRoutes.get('/:id/odontograma', OdontogramaController.listar);
+hcRoutes.post('/:id/odontograma', OdontogramaController.registrar);
+hcRoutes.delete('/:id/odontograma/:idEntrada', OdontogramaController.eliminar);
+
+// --- MEDICAMENTOS / PRESCRIPCIONES ---
+hcRoutes.get('/:id/prescripciones', PrescripcionController.listar);
+hcRoutes.post('/:id/prescripciones', PrescripcionController.registrar);
+hcRoutes.delete(
+  '/:id/prescripciones/:idPrescripcion',
+  PrescripcionController.eliminar
+);
+
+// --- ADJUNTOS ---
+hcRoutes.get('/:id/adjuntos', AdjuntoController.listar);
+hcRoutes.post('/:id/adjuntos', uploadMiddleware, AdjuntoController.subir);
+hcRoutes.delete('/:id/adjuntos/:idAdjunto', AdjuntoController.eliminar);
+hcRoutes.get('/:id/adjuntos/:idAdjunto/url', AdjuntoController.urlDescarga);
+
+// --- FICHAS DE OPERACIÓN ---
+hcRoutes.get('/:id/fichas-operacion', FichaOperacionController.listar);
+hcRoutes.post('/:id/fichas-operacion', FichaOperacionController.registrar);
+hcRoutes.get(
+  '/:id/fichas-operacion/:idFicha',
+  FichaOperacionController.obtener
+);
+hcRoutes.put(
+  '/:id/fichas-operacion/:idFicha',
+  FichaOperacionController.actualizar
+);
+hcRoutes.delete(
+  '/:id/fichas-operacion/:idFicha',
+  FichaOperacionController.eliminar
+);
+hcRoutes.get(
+  '/:id/fichas-operacion/:idFicha/auditoria',
+  FichaOperacionController.listarAuditoria
+);
+
+// --- FICHAS DE EVALUACIÓN ---
+hcRoutes.get(
+  '/:id/fichas-operacion/:idFicha/evaluacion',
+  FichaEvaluacionController.obtenerPorFicha
+);
+hcRoutes.post(
+  '/:id/fichas-operacion/:idFicha/evaluacion',
+  FichaEvaluacionController.evaluar
+);
+hcRoutes.get(
+  '/docente/evaluaciones',
+  FichaEvaluacionController.listarPorDocente
+);
+
+// --- CITAS ---
+hcRoutes.get('/:id/citas', CitaController.listarPorHistoria);
+hcRoutes.post('/:id/citas', CitaController.registrar);
+hcRoutes.patch('/:id/citas/:idCita/estado', CitaController.actualizarEstado);
+hcRoutes.delete('/:id/citas/:idCita', CitaController.eliminar);
+hcRoutes.get('/mis-citas', CitaController.listarPorEstudiante);

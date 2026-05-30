@@ -1,43 +1,67 @@
+import { IEnfermedadActualRepository } from '../domain/enfermedadActualDomain.js';
 import pool from '../../db/db.js';
 
-/**
- * Repositorio de enfermedad actual (Adaptador Secundario) para PostgreSQL.
- */
-export class EnfermedadActualRepository {
-  /**
-   * Registra la enfermedad actual usando un agregado de dominio.
-   * @param {{ obtenerParametros: () => Array<unknown>, idHistoria: string }} agregado
-   * @returns {Promise<{success: boolean, id_historia: string}>}
-   */
+export class EnfermedadActualRepository extends IEnfermedadActualRepository {
   async create(agregado) {
-    const query = 'CALL i_enfermedad_actual($1,$2,$3,$4,$5,$6,$7)';
-    await pool.query(query, agregado.obtenerParametros());
-    return { success: true, id_historia: agregado.idHistoria };
+    const [
+      idHistoria,
+      sintomaPrincipal,
+      tiempoEnfermedad,
+      formaInicio,
+      curso,
+      relato,
+      tratamientoPrev,
+    ] = agregado.obtenerParametros();
+    await pool.query(
+      `INSERT INTO enfermedad_actual (id_historia, sintoma_principal, tiempo_enfermedad, forma_inicio, curso, relato, tratamiento_prev)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        idHistoria,
+        sintomaPrincipal,
+        tiempoEnfermedad,
+        formaInicio,
+        curso,
+        relato,
+        tratamientoPrev,
+      ]
+    );
+    return { success: true, id_historia: idHistoria };
   }
 
-  /**
-   * Consulta una enfermedad actual por historia clinica.
-   * @param {string} id_historia
-   * @returns {Promise<Object|undefined>}
-   */
   async getByHistoria(id_historia) {
-    const query = 'SELECT * FROM enfermedad_actual WHERE id_historia = $1';
-    const { rows } = await pool.query(query, [id_historia]);
+    const { rows } = await pool.query(
+      'SELECT * FROM enfermedad_actual WHERE id_historia = $1',
+      [id_historia]
+    );
     return rows[0];
   }
 
-  /**
-   * Actualiza la enfermedad actual usando un agregado de dominio.
-   * @param {{ obtenerParametros: () => Array<unknown>, idHistoria: string }} agregado
-   * @returns {Promise<{success: boolean, id_historia: string}>}
-   */
   async update(agregado) {
-    const query = 'CALL u_enfermedad_actual($1,$2,$3,$4,$5,$6,$7)';
-    await pool.query(query, agregado.obtenerParametros());
-    return { success: true, id_historia: agregado.idHistoria };
+    const [
+      idHistoria,
+      sintomaPrincipal,
+      tiempoEnfermedad,
+      formaInicio,
+      curso,
+      relato,
+      tratamientoPrev,
+    ] = agregado.obtenerParametros();
+    await pool.query(
+      `UPDATE enfermedad_actual SET sintoma_principal=$1, tiempo_enfermedad=$2, forma_inicio=$3,
+       curso=$4, relato=$5, tratamiento_prev=$6 WHERE id_historia=$7`,
+      [
+        sintomaPrincipal,
+        tiempoEnfermedad,
+        formaInicio,
+        curso,
+        relato,
+        tratamientoPrev,
+        idHistoria,
+      ]
+    );
+    return { success: true, id_historia: idHistoria };
   }
 }
 
 const enfermedadActualRepository = new EnfermedadActualRepository();
-
 export default enfermedadActualRepository;

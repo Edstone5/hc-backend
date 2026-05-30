@@ -1,7 +1,6 @@
 import {
   DomainError,
   DiagnosticoPresuntivoAggregate,
-  consultarDiagnosticoPresuntivo as domainConsultar,
 } from '../domain/diagnosticoPresuntivoDomain.js';
 import { DiagnosticoPresuntivoRepository } from '../infrastructure/diagnosticoPresuntivoRepository.js';
 

@@ -64,4 +64,25 @@ class ListaHcAdultosAggregate {
   }
 }
 
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Lista HC Adultos.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IListaHcAdultosRepository {
+  /**
+   * Lista las historias clínicas de adultos asociadas a un estudiante.
+   * @param {ListaHcAdultosAggregate} _aggregate
+   * @returns {Promise<Array>}
+   * @abstract
+   */
+  async listarPorEstudiante(_aggregate) {
+    throw new Error(
+      'IListaHcAdultosRepository.listarPorEstudiante() no implementado'
+    );
+  }
+}
+
 export { DomainError, IdUuidValueObject, ListaHcAdultosAggregate };

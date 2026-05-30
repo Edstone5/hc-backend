@@ -93,4 +93,70 @@ class UserAggregate {
   }
 }
 
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Usuario.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class ActualizarEstadoAggregate {
+  constructor({ id, activo } = {}) {
+    if (!id || typeof id !== 'string') {
+      throw new DomainError('id de usuario requerido');
+    }
+    if (typeof activo !== 'boolean') {
+      throw new DomainError('activo debe ser boolean');
+    }
+    this.id = id;
+    this.activo = activo;
+    Object.freeze(this);
+  }
+}
+
+export class IUserRepository {
+  /**
+   * Devuelve todos los usuarios registrados en el sistema.
+   * @returns {Promise<Array>}
+   * @abstract
+   */
+  async listarUsuarios() {
+    throw new Error('IUserRepository.listarUsuarios() no implementado');
+  }
+
+  /**
+   * Persiste un nuevo usuario.
+   * @param {UserAggregate} _agregado
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async registrarUsuario(_agregado) {
+    throw new Error('IUserRepository.registrarUsuario() no implementado');
+  }
+
+  /**
+   * Recupera un usuario por su identificador UUID.
+   * @param {string} _id
+   * @returns {Promise<Object|null>}
+   * @abstract
+   */
+  async obtenerUsuarioPorId(_id) {
+    throw new Error('IUserRepository.obtenerUsuarioPorId() no implementado');
+  }
+
+  /**
+   * Recupera un usuario por su código de acceso (para login).
+   * @param {string} _userCode
+   * @returns {Promise<Object|null>}
+   * @abstract
+   */
+  async obtenerUsuarioLogin(_userCode) {
+    throw new Error('IUserRepository.obtenerUsuarioLogin() no implementado');
+  }
+
+  async actualizarEstado(_agregado) {
+    throw new Error('IUserRepository.actualizarEstado() no implementado');
+  }
+}
+
 export { DomainError, UserCodeValueObject, EmailValueObject, UserAggregate };

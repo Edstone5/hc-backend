@@ -423,3 +423,86 @@ export class SeguimientoDelTratamientoAggregate {
     return this.#idHistoria.value;
   }
 }
+
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Antecedentes.
+ * Cubre las cuatro secciones: personal, médico, familiar y cumplimiento.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IAntecedenteRepository {
+  /** @abstract @param {AntecedentePersonalAggregate} _agregado @returns {Promise<boolean>} */
+  async createAntecedentePersonal(_agregado) {
+    throw new Error(
+      'IAntecedenteRepository.createAntecedentePersonal() no implementado'
+    );
+  }
+  /** @abstract @param {string} _idHistoria @returns {Promise<Object|undefined>} */
+  async getAntecedentePersonalByHistoria(_idHistoria) {
+    throw new Error(
+      'IAntecedenteRepository.getAntecedentePersonalByHistoria() no implementado'
+    );
+  }
+  /** @abstract @param {AntecedentePersonalAggregate} _agregado @returns {Promise<boolean>} */
+  async updateAntecedentePersonal(_agregado) {
+    throw new Error(
+      'IAntecedenteRepository.updateAntecedentePersonal() no implementado'
+    );
+  }
+  /** @abstract @param {AntecedenteMedicoAggregate} _agregado @returns {Promise<boolean>} */
+  async createAntecedenteMedico(_agregado) {
+    throw new Error(
+      'IAntecedenteRepository.createAntecedenteMedico() no implementado'
+    );
+  }
+  /** @abstract @param {string} _idHistoria @returns {Promise<Object|undefined>} */
+  async getAntecedenteMedicoByHistoria(_idHistoria) {
+    throw new Error(
+      'IAntecedenteRepository.getAntecedenteMedicoByHistoria() no implementado'
+    );
+  }
+  /** @abstract @param {AntecedenteMedicoAggregate} _agregado @returns {Promise<boolean>} */
+  async updateAntecedenteMedico(_agregado) {
+    throw new Error(
+      'IAntecedenteRepository.updateAntecedenteMedico() no implementado'
+    );
+  }
+  /** @abstract @param {AntecedenteFamiliarAggregate} _agregado @returns {Promise<boolean>} */
+  async createAntecedenteFamiliar(_agregado) {
+    throw new Error(
+      'IAntecedenteRepository.createAntecedenteFamiliar() no implementado'
+    );
+  }
+  /** @abstract @param {string} _idHistoria @returns {Promise<Object|undefined>} */
+  async getAntecedenteFamiliarByHistoria(_idHistoria) {
+    throw new Error(
+      'IAntecedenteRepository.getAntecedenteFamiliarByHistoria() no implementado'
+    );
+  }
+  /** @abstract @param {AntecedenteFamiliarAggregate} _agregado @returns {Promise<boolean>} */
+  async updateAntecedenteFamiliar(_agregado) {
+    throw new Error(
+      'IAntecedenteRepository.updateAntecedenteFamiliar() no implementado'
+    );
+  }
+  /** @abstract @param {SeguimientoDelTratamientoAggregate} _agregado @returns {Promise<boolean>} */
+  async createAntecedenteCumplimiento(_agregado) {
+    throw new Error(
+      'IAntecedenteRepository.createAntecedenteCumplimiento() no implementado'
+    );
+  }
+  /** @abstract @param {string} _idHistoria @returns {Promise<Object|undefined>} */
+  async getAntecedenteCumplimientoByHistoria(_idHistoria) {
+    throw new Error(
+      'IAntecedenteRepository.getAntecedenteCumplimientoByHistoria() no implementado'
+    );
+  }
+  /** @abstract @param {SeguimientoDelTratamientoAggregate} _agregado @returns {Promise<boolean>} */
+  async updateAntecedenteCumplimiento(_agregado) {
+    throw new Error(
+      'IAntecedenteRepository.updateAntecedenteCumplimiento() no implementado'
+    );
+  }
+}

@@ -1,5 +1,3 @@
-import pool from '../../db/db.js';
-
 class DomainError extends Error {
   constructor(message) {
     super(message);
@@ -105,31 +103,37 @@ class EvolucionAggregate {
   }
 }
 
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Evolución.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IEvolucionRepository {
+  /**
+   * Lista las evoluciones de una historia clínica ordenadas por fecha descendente.
+   * @param {string} _idHistory - UUID de la historia clínica.
+   * @returns {Promise<Array>}
+   * @abstract
+   */
+  async consultarEvoluciones(_idHistory) {
+    throw new Error(
+      'IEvolucionRepository.consultarEvoluciones() no implementado'
+    );
+  }
+
+  /**
+   * Persiste una nueva evolución.
+   * @param {EvolucionAggregate} _agregado - Aggregate Root validado del dominio.
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async registrarEvolucion(_agregado) {
+    throw new Error(
+      'IEvolucionRepository.registrarEvolucion() no implementado'
+    );
+  }
+}
+
 export { DomainError, EvolucionAggregate };
-
-export async function consultarEvoluciones(idHistory) {
-  const id = stripHCPrefix(String(idHistory || ''));
-  if (!id) {
-    return [];
-  }
-  const result = await pool.query(
-    'SELECT * FROM evolucion WHERE id_historia = $1 ORDER BY fecha DESC, id_evolucion DESC',
-    [id]
-  );
-  return result.rows;
-}
-
-export async function registrarEvolucion(aggregateOrObj) {
-  try {
-    const agregado =
-      aggregateOrObj instanceof EvolucionAggregate
-        ? aggregateOrObj
-        : new EvolucionAggregate(aggregateOrObj);
-    await pool.query('CALL i_evolucion($1, $2, $3, $4, $5)', [
-      ...agregado.obtenerParametros(),
-    ]);
-    return true;
-  } catch (error) {
-    throw error;
-  }
-}

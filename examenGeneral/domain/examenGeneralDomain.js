@@ -231,3 +231,42 @@ export class ExamenFisicoGeneralAggregate {
     return this.#idHistoria.value;
   }
 }
+
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Examen Físico General.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IExamenGeneralRepository {
+  /**
+   * Persiste un nuevo examen físico general.
+   * @param {ExamenFisicoGeneralAggregate} _agregado
+   * @returns {Promise<Object|null>}
+   * @abstract
+   */
+  async create(_agregado) {
+    throw new Error('IExamenGeneralRepository.create() no implementado');
+  }
+
+  /**
+   * Recupera el examen físico general de una historia clínica.
+   * @param {string} _idHistoria
+   * @returns {Promise<Object|null>}
+   * @abstract
+   */
+  async getByHistoria(_idHistoria) {
+    throw new Error('IExamenGeneralRepository.getByHistoria() no implementado');
+  }
+
+  /**
+   * Actualiza el examen físico general de una historia clínica existente.
+   * @param {ExamenFisicoGeneralAggregate} _agregado
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async update(_agregado) {
+    throw new Error('IExamenGeneralRepository.update() no implementado');
+  }
+}

@@ -68,4 +68,25 @@ class AuthAggregate {
   }
 }
 
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Auth (Autenticación).
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IAuthRepository {
+  /**
+   * Obtiene los datos de un usuario por su código de acceso para login.
+   * @param {AuthAggregate} _agregado
+   * @returns {Promise<Object|null>} Fila cruda del usuario o null si no existe.
+   * @abstract
+   */
+  async obtenerUsuarioPorUserCode(_agregado) {
+    throw new Error(
+      'IAuthRepository.obtenerUsuarioPorUserCode() no implementado'
+    );
+  }
+}
+
 export { DomainError, UserCodeValueObject, PasswordValueObject, AuthAggregate };

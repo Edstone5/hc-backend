@@ -1,6 +1,7 @@
+import { IDerivacionClinicasRepository } from '../domain/derivacionClinicasDomain.js';
 import pool from '../../db/db.js';
 
-class DerivacionClinicasRepository {
+class DerivacionClinicasRepository extends IDerivacionClinicasRepository {
   async consultarPorHistoria(idHistory) {
     const id = String(idHistory || '');
     if (!id) {
@@ -41,11 +42,26 @@ class DerivacionClinicasRepository {
             aggregateOrObj?.docente,
             aggregateOrObj?.idUsuario,
           ];
+    const [idHistory, destinos, observaciones, alumno, docente] = params;
 
-    await pool.query(
-      'CALL i_derivacion_clinicas($1, $2, $3, $4, $5, $6)',
-      params
+    const existing = await pool.query(
+      'SELECT id_derivacion FROM derivacion_clinicas WHERE id_historia = $1',
+      [idHistory]
     );
+    if (existing.rows[0]) {
+      await pool.query(
+        `UPDATE derivacion_clinicas SET destinos=$1, observaciones=$2,
+         fecha_derivacion=CURRENT_DATE, alumno_diagnostico=$3, docente=$4
+         WHERE id_historia=$5`,
+        [destinos, observaciones, alumno, docente, idHistory]
+      );
+    } else {
+      await pool.query(
+        `INSERT INTO derivacion_clinicas (id_historia, destinos, observaciones, fecha_derivacion, alumno_diagnostico, docente)
+         VALUES ($1, $2, $3, CURRENT_DATE, $4, $5)`,
+        [idHistory, destinos, observaciones, alumno, docente]
+      );
+    }
     return true;
   }
 }

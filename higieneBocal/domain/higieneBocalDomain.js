@@ -82,4 +82,37 @@ class HigieneBocalAggregate {
   }
 }
 
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Higiene Bucal.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IHigieneBocalRepository {
+  /**
+   * Recupera el estado de higiene bucal de una historia clínica.
+   * @param {string} _idHistory
+   * @returns {Promise<{estadoHigiene: string}|null>}
+   * @abstract
+   */
+  async consultarPorHistoria(_idHistory) {
+    throw new Error(
+      'IHigieneBocalRepository.consultarPorHistoria() no implementado'
+    );
+  }
+
+  /**
+   * Persiste el examen de higiene bucal de una historia clínica.
+   * @param {HigieneBocalAggregate} _dataOrAggregate
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async actualizarHigieneBocal(_dataOrAggregate) {
+    throw new Error(
+      'IHigieneBocalRepository.actualizarHigieneBocal() no implementado'
+    );
+  }
+}
+
 export { DomainError, HigieneBocalAggregate };

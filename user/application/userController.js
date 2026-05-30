@@ -9,6 +9,7 @@ import {
   UserCodeValueObject,
   EmailValueObject,
   UserAggregate,
+  ActualizarEstadoAggregate,
 } from '../domain/userDomain.js';
 
 const repo = new UserRepository();
@@ -58,6 +59,28 @@ export const UserController = {
         return res.status(400).json({ error: err.message });
       }
       return res.status(500).json({ error: 'Error registering user' });
+    }
+  },
+
+  actualizarEstado: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { activo } = req.body;
+      if (typeof activo !== 'boolean') {
+        return res.status(400).json({ error: 'activo debe ser true o false' });
+      }
+      const agg = new ActualizarEstadoAggregate({ id, activo });
+      await repo.actualizarEstado(agg);
+      return res.status(200).json({
+        message: `Usuario ${activo ? 'habilitado' : 'deshabilitado'} correctamente`,
+      });
+    } catch (err) {
+      if (esErrorDominio(err)) {
+        return res.status(400).json({ error: err.message });
+      }
+      return res
+        .status(500)
+        .json({ error: 'Error al actualizar estado del usuario' });
     }
   },
 

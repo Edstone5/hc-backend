@@ -1,29 +1,42 @@
 /**
  * Adaptador Secundario: PatientRepository
- * Usa `pool.query` para realizar operaciones en PostgreSQL.
+ * Usa `pool.query` para realizar operaciones en la base de datos.
+ * Implementa {@link IPatientRepository}.
  */
+import { randomUUID } from 'crypto';
+import { IPatientRepository } from '../domain/patientDomain.js';
 import pool from '../../db/db.js';
 
-class PatientRepository {
+class PatientRepository extends IPatientRepository {
   async crearPaciente(aggregate) {
-    const params = aggregate.obtenerParametrosParaCrear();
-    const result = await pool.query(
-      'SELECT fn_crear_paciente($1, $2, $3, $4, $5, $6, $7) AS id_paciente',
-      params
+    const [nombre, apellido, dni, fechaNac, sexo, telefono, email] =
+      aggregate.obtenerParametrosParaCrear();
+    const id = randomUUID();
+    await pool.query(
+      `INSERT INTO paciente (id_paciente, nombre, apellido, dni, fecha_nacimiento, sexo, telefono, email)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [id, nombre, apellido, dni, fechaNac, sexo, telefono, email]
     );
-    return { id: result.rows[0].id_paciente };
+    return { id };
   }
 
   async actualizarPaciente(id, aggregate) {
     const params = aggregate.obtenerParametrosParaActualizar();
-    await pool.query('CALL u_paciente($1, $2, $3, $4, $5, $6)', [
-      id,
-      params[0] || null,
-      params[1] || null,
-      params[2] || null,
-      params[3] || null,
-      null,
-    ]);
+    await pool.query(
+      `UPDATE paciente
+       SET nombre   = COALESCE($1, nombre),
+           apellido = COALESCE($2, apellido),
+           telefono = COALESCE($3, telefono),
+           email    = COALESCE($4, email)
+       WHERE id_paciente = $5`,
+      [
+        params[0] || null,
+        params[1] || null,
+        params[2] || null,
+        params[3] || null,
+        id,
+      ]
+    );
     return true;
   }
 }

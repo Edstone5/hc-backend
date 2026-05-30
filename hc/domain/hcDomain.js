@@ -1,5 +1,3 @@
-import pool from '../../db/db.js';
-
 /**
  * Dominio: Hc (Historias clínicas)
  * Value Objects, DomainError y Aggregates. Sin SQL.
@@ -159,5 +157,86 @@ export class ConsultaHistoriasEstudianteAggregate extends HcAggregateBase {
 
   obtenerParametros() {
     return [this._idStudent.value];
+  }
+}
+
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de HC (Historias Clínicas).
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IHcRepository {
+  /**
+   * Registra la revisión de una historia clínica por parte de un docente.
+   * @param {RevisionHistoriaClinicaAggregate} _agregado
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async crearRevision(_agregado) {
+    throw new Error('IHcRepository.crearRevision() no implementado');
+  }
+
+  /**
+   * Crea una nueva historia clínica y devuelve su identificador.
+   * @param {RegistroHistoriaClinicaAggregate} _agregado
+   * @returns {Promise<Object|null>}
+   * @abstract
+   */
+  async crearHistoriaClinica(_agregado) {
+    throw new Error('IHcRepository.crearHistoriaClinica() no implementado');
+  }
+
+  /**
+   * Lista todas las historias clínicas de un estudiante.
+   * @param {ConsultaHistoriasEstudianteAggregate} _agregado
+   * @returns {Promise<Array>}
+   * @abstract
+   */
+  async listarHistoriasPorEstudiante(_agregado) {
+    throw new Error(
+      'IHcRepository.listarHistoriasPorEstudiante() no implementado'
+    );
+  }
+
+  /**
+   * Obtiene o crea una historia clínica en estado borrador para un estudiante.
+   * @param {ConsultaHistoriasEstudianteAggregate} _agregado
+   * @returns {Promise<{id_historia: string}>}
+   * @abstract
+   */
+  async obtenerBorrador(_agregado) {
+    throw new Error('IHcRepository.obtenerBorrador() no implementado');
+  }
+
+  /**
+   * Asigna un paciente a una historia clínica.
+   * @param {AsignacionPacienteAggregate} _agregado
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async asignarPaciente(_agregado) {
+    throw new Error('IHcRepository.asignarPaciente() no implementado');
+  }
+
+  /**
+   * Recupera los datos del paciente asociado a una historia clínica.
+   * @param {ConsultaPacienteHistoriaClinicaAggregate} _agregado
+   * @returns {Promise<Object|null>}
+   * @abstract
+   */
+  async obtenerPacientePorHistoria(_agregado) {
+    throw new Error(
+      'IHcRepository.obtenerPacientePorHistoria() no implementado'
+    );
+  }
+
+  async transferirHistoria(_idHistoria, _idNuevoEstudiante, _razon) {
+    throw new Error('IHcRepository.transferirHistoria() no implementado');
+  }
+
+  async buscarHistorias(_filtros) {
+    throw new Error('IHcRepository.buscarHistorias() no implementado');
   }
 }

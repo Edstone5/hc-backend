@@ -1,29 +1,166 @@
 version: '3.8'
 
 services:
-  # --- Backend ---
+  # ── Base de datos MySQL ────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: hc_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: hc_db
+      MYSQL_USER: hc_user
+      MYSQL_PASSWORD: hc_password
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'mysqladmin',
+          'ping',
+          '-h',
+          'localhost',
+          '-u',
+          'hc_user',
+          '-phc_password',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ── Backend (Node.js / Express) ────────────────────────────────────────────
+  # En producción la imagen viene de GHCR (publicada por GitHub Actions CI).
+  # En desarrollo local se construye desde el Dockerfile con `build: .`.
+  # GitOps: Watchtower monitorea esta imagen y la actualiza automáticamente
+  # cuando GitHub Actions publica una nueva versión (cada push a main).
   backend:
-    build: ./hc-backend
+    image: ${BACKEND_IMAGE:-hc_backend_local}
+    build: .
+    container_name: hc_backend
+    restart: unless-stopped
     ports:
       - '3000:3000'
+    depends_on:
+      mysql:
+        condition: service_healthy
     environment:
-      # Usamos la URL de NeonDB que tienes en tu .env
-      - DATABASE_URL=postgresql://neondb_owner:npg_mGCahxcU13sw@ep-raspy-resonance-adi83erh-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
-      # Tus claves JWT (cópialas de tu .env o crea nuevas)
-      - JWT_SECRET=your_jwt_secret_key
-      - JWT_REFRESH_SECRET=your_jwt_refresh_secret_key
+      - DB_HOST=mysql
+      - DB_USER=hc_user
+      - DB_PASSWORD=hc_password
+      - DB_NAME=hc_db
+      - DB_PORT=3306
+      - JWT_SECRET=${JWT_SECRET:-supersecret_jwt_key_change_in_production}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-supersecret_refresh_key_change_in_production}
       - PORT=3000
+      - NODE_ENV=production
     volumes:
-      - ./hc-backend:/app
+      - .:/app
       - /app/node_modules
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/health || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    # Watchtower solo monitorea contenedores con este label
+    labels:
+      - 'com.centurylinklabs.watchtower.scope=gitops'
 
-  # --- Frontend ---
+  # ── Frontend (React / Vite) ────────────────────────────────────────────────
   frontend:
-    build: ./hc-frontend
+    build: ../hc-frontend
+    container_name: hc_frontend
+    restart: unless-stopped
     ports:
       - '5173:5173'
+    depends_on:
+      backend:
+        condition: service_healthy
     environment:
       - VITE_API_URL=http://localhost:3000/api
     volumes:
-      - ./hc-frontend:/app
+      - ../hc-frontend:/app
       - /app/node_modules
+
+  # ── Prometheus (scrape de métricas) ───────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: hc_prometheus
+    restart: unless-stopped
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # ── Watchtower — Agente GitOps para Docker ───────────────────────────────
+  # Principio GitOps "Pull automático + Reconciliación continua":
+  # Watchtower observa el registro GHCR cada 30 segundos.
+  # Cuando detecta una imagen más nueva que la corriendo (publicada por CI),
+  # la descarga y reinicia el contenedor automáticamente.
+  # Resultado: un `git push` a main es suficiente para desplegar en producción.
+  # En desarrollo local (sin credenciales GHCR) se puede deshabilitar con:
+  #   docker-compose --profile prod up -d
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: hc_watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      # Credenciales del registro de imágenes (GHCR)
+      - REPO_USER=${GHCR_USER:-}
+      - REPO_PASS=${GHCR_TOKEN:-}
+      # Solo monitorear el contenedor del backend (no Grafana, MySQL, etc.)
+      - WATCHTOWER_SCOPE=gitops
+      # Intervalo de chequeo: 30 segundos
+      - WATCHTOWER_POLL_INTERVAL=30
+      # Enviar notificación por log cuando actualice
+      - WATCHTOWER_NOTIFICATIONS=shoutrrr
+      # Borrar imágenes viejas después de actualizar
+      - WATCHTOWER_CLEANUP=true
+      # Modo rolling restart para zero-downtime
+      - WATCHTOWER_ROLLING_RESTART=true
+    # Solo en producción (cuando GHCR_TOKEN está definido)
+    profiles:
+      - prod
+    labels:
+      - 'com.centurylinklabs.watchtower.scope=gitops'
+
+  # ── Grafana (dashboard de métricas) ───────────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: hc_grafana
+    restart: unless-stopped
+    ports:
+      - '3001:3000'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+
+volumes:
+  mysql_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

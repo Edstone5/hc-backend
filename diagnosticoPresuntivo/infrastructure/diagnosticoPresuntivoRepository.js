@@ -1,13 +1,19 @@
+import { randomUUID } from 'crypto';
+import { IDiagnosticoPresuntivoRepository } from '../domain/diagnosticoPresuntivoDomain.js';
 import pool from '../../db/db.js';
 
-class DiagnosticoPresuntivoRepository {
+class DiagnosticoPresuntivoRepository extends IDiagnosticoPresuntivoRepository {
   async consultarPorHistoria(idHistory) {
     const id = String(idHistory || '');
     if (!id) {
       return { descripcion: '' };
     }
+    const orderBy =
+      pool.dialect === 'mysql'
+        ? 'ORDER BY fecha DESC LIMIT 1'
+        : 'ORDER BY fecha DESC NULLS LAST LIMIT 1';
     const result = await pool.query(
-      `SELECT descripcion FROM diagnostico WHERE id_historia = $1 AND tipo = 'presuntivo' ORDER BY fecha DESC NULLS LAST LIMIT 1`,
+      `SELECT descripcion FROM diagnostico WHERE id_historia = $1 AND tipo = 'presuntivo' ${orderBy}`,
       [id]
     );
     if (!result.rows[0]) {
@@ -25,7 +31,12 @@ class DiagnosticoPresuntivoRepository {
             aggregateOrObj?.descripcion,
             aggregateOrObj?.idUsuario,
           ];
-    await pool.query('CALL i_diagnostico_presuntivo($1, $2, $3)', params);
+    const [idHistory, descripcion, idUsuario] = params;
+    await pool.query(
+      `INSERT INTO diagnostico (id_diagnostico, id_historia, tipo, descripcion, fecha)
+       VALUES ($1, $2, 'presuntivo', $3, CURRENT_DATE)`,
+      [randomUUID(), idHistory, descripcion]
+    );
     return true;
   }
 }

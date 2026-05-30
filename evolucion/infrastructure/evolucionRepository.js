@@ -1,13 +1,18 @@
+import { IEvolucionRepository } from '../domain/evolucionDomain.js';
 import pool from '../../db/db.js';
 
-class EvolucionRepository {
+class EvolucionRepository extends IEvolucionRepository {
   async consultarEvoluciones(idHistory) {
     const id = String(idHistory || '');
     if (!id) {
       return [];
     }
+    const orderBy =
+      pool.dialect === 'mysql'
+        ? 'ORDER BY fecha DESC, id_evolucion DESC'
+        : 'ORDER BY fecha DESC NULLS LAST, id_evolucion DESC';
     const result = await pool.query(
-      'SELECT * FROM evolucion WHERE id_historia = $1 ORDER BY fecha DESC, id_evolucion DESC',
+      `SELECT * FROM evolucion WHERE id_historia = $1 ${orderBy}`,
       [id]
     );
     return result.rows;
@@ -24,7 +29,12 @@ class EvolucionRepository {
             aggregateOrObj?.alumno,
             aggregateOrObj?.idUsuario,
           ];
-    await pool.query('CALL i_evolucion($1, $2, $3, $4, $5)', params);
+    const [idHistory, fecha, actividad, alumno] = params;
+    await pool.query(
+      `INSERT INTO evolucion (id_historia, fecha, actividad, alumno)
+       VALUES ($1, $2, $3, $4)`,
+      [idHistory, fecha, actividad, alumno]
+    );
     return true;
   }
 }

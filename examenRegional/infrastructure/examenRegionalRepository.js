@@ -1,104 +1,53 @@
+import { IExamenRegionalRepository } from '../domain/examenRegionalDomain.js';
 import pool from '../../db/db.js';
 
-/**
- * Repositorio de examen fisico regional (Adaptador Secundario) para PostgreSQL.
- */
-export class ExamenRegionalRepository {
-  /**
-   * @param {{ obtenerParametros: () => Array<unknown> }} agregado
-   * @returns {Promise<Object|null>}
-   */
+export class ExamenRegionalRepository extends IExamenRegionalRepository {
   async create(agregado) {
-    const query = `
-      INSERT INTO examen_regional (
-        id_historia,
-        cabeza_posicion,
-        cabeza_movimientos,
-        cabeza_movimientos_obs,
-        craneo_tamano,
-        craneo_forma,
-        cara_forma_frente,
-        cara_forma_perfil,
-        ojos_cejas_adecuada,
-        ojos_implantacion_obs,
-        ojos_escleroticas,
-        ojos_agudeza_visual,
-        ojos_iris_color,
-        ojos_arco_senil,
-        nariz_forma,
-        nariz_permeables,
-        nariz_secreciones,
-        nariz_senos_dolorosos,
-        oidos_anomalias_morfologicas,
-        oidos_anomalias_obs,
-        oidos_secreciones,
-        oidos_audicion_conservada,
-        atm_trayectoria,
-        atm_lat_izq_dolor,
-        atm_lat_izq_ruido,
-        atm_lat_izq_salto,
-        atm_lat_der_dolor,
-        atm_lat_der_ruido,
-        atm_lat_der_salto,
-        atm_prot_dolor,
-        atm_prot_ruido,
-        atm_prot_salto,
-        atm_aper_dolor,
-        atm_aper_ruido,
-        atm_aper_salto,
-        atm_cierre_dolor,
-        atm_cierre_ruido,
-        atm_cierre_salto,
-        atm_coordinacion_condilar,
-        atm_apertura_maxima_mm,
-        atm_observaciones,
-        atm_musculos_dolor,
-        atm_musculos_dolor_grado,
-        atm_musculos_dolor_zona,
-        cuello_simetrico,
-        cuello_simetrico_obs,
-        cuello_movilidad_conservada,
-        cuello_movilidad_obs,
-        laringe_alineada,
-        laringe_alineada_obs,
-        cuello_otros
-      )
-      VALUES (
-        $1,
-        $2, $3, $4, $5, $6, $7, $8,
-        $9, $10, $11, $12, $13, $14,
-        $15, $16, $17, $18,
-        $19, $20, $21, $22,
-        $23,
-        $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38,
-        $39, $40, $41, $42, $43, $44,
-        $45, $46, $47, $48, $49, $50, $51
-      )
-      RETURNING *
-    `;
-
-    const { rows } = await pool.query(query, agregado.obtenerParametros());
-    if (rows.length === 0) {
-      return null;
+    const params = agregado.obtenerParametros();
+    const returning = pool.dialect === 'mysql' ? '' : ' RETURNING *';
+    const { rows } = await pool.query(
+      `INSERT INTO examen_regional (
+        id_historia,cabeza_posicion,cabeza_movimientos,cabeza_movimientos_obs,
+        craneo_tamano,craneo_forma,cara_forma_frente,cara_forma_perfil,
+        ojos_cejas_adecuada,ojos_implantacion_obs,ojos_escleroticas,ojos_agudeza_visual,
+        ojos_iris_color,ojos_arco_senil,nariz_forma,nariz_permeables,nariz_secreciones,
+        nariz_senos_dolorosos,oidos_anomalias_morfologicas,oidos_anomalias_obs,
+        oidos_secreciones,oidos_audicion_conservada,atm_trayectoria,
+        atm_lat_izq_dolor,atm_lat_izq_ruido,atm_lat_izq_salto,
+        atm_lat_der_dolor,atm_lat_der_ruido,atm_lat_der_salto,
+        atm_prot_dolor,atm_prot_ruido,atm_prot_salto,
+        atm_aper_dolor,atm_aper_ruido,atm_aper_salto,
+        atm_cierre_dolor,atm_cierre_ruido,atm_cierre_salto,
+        atm_coordinacion_condilar,atm_apertura_maxima_mm,atm_observaciones,
+        atm_musculos_dolor,atm_musculos_dolor_grado,atm_musculos_dolor_zona,
+        cuello_simetrico,cuello_simetrico_obs,cuello_movilidad_conservada,
+        cuello_movilidad_obs,laringe_alineada,laringe_alineada_obs,cuello_otros
+      ) VALUES (
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,
+        $21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,
+        $39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51
+      )${returning}`,
+      params
+    );
+    if (pool.dialect === 'mysql') {
+      const { rows: r } = await pool.query(
+        'SELECT * FROM examen_regional WHERE id_historia = $1',
+        [params[0]]
+      );
+      return r[0] || null;
     }
-    return rows[0];
+    return rows[0] || null;
   }
 
-  /**
-   * @param {string} idHistoria
-   * @returns {Promise<Object|null>}
-   */
   async getByHistoria(idHistoria) {
     const result = await pool.query(
       'SELECT * FROM examen_regional WHERE id_historia = $1',
       [idHistoria]
     );
-
     const data = result.rows[0];
     if (!data) {
       return null;
     }
-
     return {
       cabezaPosicion: data.cabeza_posicion,
       cabezaMovimientos: data.cabeza_movimientos,
@@ -153,30 +102,33 @@ export class ExamenRegionalRepository {
     };
   }
 
-  /**
-   * @param {{ obtenerParametros: () => Array<unknown> }} agregado
-   * @returns {Promise<boolean>}
-   */
   async update(agregado) {
+    const p = agregado.obtenerParametros();
+    // p[0]=id_historia, p[1..50]=campos
     await pool.query(
-      `CALL u_examen_regional(
-        $1,
-        $2, $3, $4, $5, $6, $7, $8,
-        $9, $10, $11, $12, $13, $14,
-        $15, $16, $17, $18,
-        $19, $20, $21, $22,
-        $23,
-        $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38,
-        $39, $40, $41, $42, $43, $44,
-        $45, $46, $47, $48, $49, $50, $51
-      )`,
-      agregado.obtenerParametros()
+      `UPDATE examen_regional SET
+        cabeza_posicion=$2, cabeza_movimientos=$3, cabeza_movimientos_obs=$4,
+        craneo_tamano=$5, craneo_forma=$6, cara_forma_frente=$7, cara_forma_perfil=$8,
+        ojos_cejas_adecuada=$9, ojos_implantacion_obs=$10, ojos_escleroticas=$11,
+        ojos_agudeza_visual=$12, ojos_iris_color=$13, ojos_arco_senil=$14,
+        nariz_forma=$15, nariz_permeables=$16, nariz_secreciones=$17,
+        nariz_senos_dolorosos=$18, oidos_anomalias_morfologicas=$19, oidos_anomalias_obs=$20,
+        oidos_secreciones=$21, oidos_audicion_conservada=$22, atm_trayectoria=$23,
+        atm_lat_izq_dolor=$24, atm_lat_izq_ruido=$25, atm_lat_izq_salto=$26,
+        atm_lat_der_dolor=$27, atm_lat_der_ruido=$28, atm_lat_der_salto=$29,
+        atm_prot_dolor=$30, atm_prot_ruido=$31, atm_prot_salto=$32,
+        atm_aper_dolor=$33, atm_aper_ruido=$34, atm_aper_salto=$35,
+        atm_cierre_dolor=$36, atm_cierre_ruido=$37, atm_cierre_salto=$38,
+        atm_coordinacion_condilar=$39, atm_apertura_maxima_mm=$40, atm_observaciones=$41,
+        atm_musculos_dolor=$42, atm_musculos_dolor_grado=$43, atm_musculos_dolor_zona=$44,
+        cuello_simetrico=$45, cuello_simetrico_obs=$46, cuello_movilidad_conservada=$47,
+        cuello_movilidad_obs=$48, laringe_alineada=$49, laringe_alineada_obs=$50, cuello_otros=$51
+       WHERE id_historia=$1`,
+      p
     );
-
     return true;
   }
 }
 
 const examenRegionalRepository = new ExamenRegionalRepository();
-
 export default examenRegionalRepository;

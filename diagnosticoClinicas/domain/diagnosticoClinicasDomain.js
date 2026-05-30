@@ -1,5 +1,3 @@
-import pool from '../../db/db.js';
-
 class DomainError extends Error {
   constructor(message) {
     super(message);
@@ -169,6 +167,39 @@ class DiagnosticoClinicasAggregate {
       this._alumnoTratante.value,
       this._idUsuario.toString(),
     ];
+  }
+}
+
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Diagnóstico de Clínicas.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IDiagnosticoClinicasRepository {
+  /**
+   * Recupera el diagnóstico de clínicas de una historia (con fallback).
+   * @param {string} _idHistory - UUID de la historia clínica.
+   * @returns {Promise<Object|null>}
+   * @abstract
+   */
+  async consultarPorHistoria(_idHistory) {
+    throw new Error(
+      'IDiagnosticoClinicasRepository.consultarPorHistoria() no implementado'
+    );
+  }
+
+  /**
+   * Persiste el diagnóstico definitivo de clínicas especializadas.
+   * @param {DiagnosticoClinicasAggregate} _agregado - Aggregate Root validado.
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async actualizarDiagnosticoClinicas(_agregado) {
+    throw new Error(
+      'IDiagnosticoClinicasRepository.actualizarDiagnosticoClinicas() no implementado'
+    );
   }
 }
 

@@ -1,0 +1,14 @@
+# /etc/systemd/system/hc-reconcile.service
+# Agente GitOps: ejecuta reconcile.sh
+[Unit]
+Description=HC Backend — GitOps reconciliation agent
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/hc-backend.env
+ExecStart=/srv/hc-backend/scripts/reconcile.sh
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=hc-reconcile

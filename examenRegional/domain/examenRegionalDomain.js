@@ -358,3 +358,44 @@ export class ExamenFisicoRegionalAggregate {
     return this.#idHistoria.value;
   }
 }
+
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Examen Físico Regional.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IExamenRegionalRepository {
+  /**
+   * Persiste un nuevo examen físico regional.
+   * @param {ExamenFisicoRegionalAggregate} _agregado
+   * @returns {Promise<Object|null>}
+   * @abstract
+   */
+  async create(_agregado) {
+    throw new Error('IExamenRegionalRepository.create() no implementado');
+  }
+
+  /**
+   * Recupera el examen físico regional de una historia clínica.
+   * @param {string} _idHistoria
+   * @returns {Promise<Object|null>}
+   * @abstract
+   */
+  async getByHistoria(_idHistoria) {
+    throw new Error(
+      'IExamenRegionalRepository.getByHistoria() no implementado'
+    );
+  }
+
+  /**
+   * Actualiza el examen físico regional de una historia clínica existente.
+   * @param {ExamenFisicoRegionalAggregate} _agregado
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async update(_agregado) {
+    throw new Error('IExamenRegionalRepository.update() no implementado');
+  }
+}

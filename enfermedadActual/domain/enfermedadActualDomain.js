@@ -140,3 +140,44 @@ export class EnfermedadActualAggregate {
     return this.#idHistoria.value;
   }
 }
+
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Enfermedad Actual.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IEnfermedadActualRepository {
+  /**
+   * Persiste la enfermedad actual de una historia clínica.
+   * @param {EnfermedadActualAggregate} _agregado
+   * @returns {Promise<{success: boolean, id_historia: string}>}
+   * @abstract
+   */
+  async create(_agregado) {
+    throw new Error('IEnfermedadActualRepository.create() no implementado');
+  }
+
+  /**
+   * Recupera la enfermedad actual de una historia clínica.
+   * @param {string} _id_historia
+   * @returns {Promise<Object|undefined>}
+   * @abstract
+   */
+  async getByHistoria(_id_historia) {
+    throw new Error(
+      'IEnfermedadActualRepository.getByHistoria() no implementado'
+    );
+  }
+
+  /**
+   * Actualiza la enfermedad actual de una historia clínica existente.
+   * @param {EnfermedadActualAggregate} _agregado
+   * @returns {Promise<{success: boolean, id_historia: string}>}
+   * @abstract
+   */
+  async update(_agregado) {
+    throw new Error('IEnfermedadActualRepository.update() no implementado');
+  }
+}

@@ -1,341 +1,254 @@
-# 📌 Proyecto Backend – Sistema de Gestión de Historias Clínicas
+# HC Backend — Sistema de Historia Clínica UNJBG
 
-Este repositorio contiene el **backend** del sistema de gestión de historias clínicas.  
-Está construido con **Node.js + Express** bajo una arquitectura organizada en capas.
+[![CI](https://github.com/vaquitamarina/hc-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/vaquitamarina/hc-backend/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)](./coverage/index.html)
+[![Node.js](https://img.shields.io/badge/node-20_LTS-green)](https://nodejs.org)
+[![License](https://img.shields.io/badge/license-ISC-blue)](./LICENSE)
 
-## 🚀 Requisitos previos
+Backend REST del sistema de historia clínica digital para estudiantes y docentes de odontología de la **Universidad Nacional Jorge Basadre Grohmann**, Tacna, Perú.
 
-Antes de comenzar, asegúrate de tener instalado:
-
-- Node.js versión 22.19.0 o superior
-- npm versión 9 o superior (incluido con Node.js)
-- Git
+**v2.0.0** — Arquitectura Hexagonal · MySQL 8.0 · Docker · CI/CD · SRE Dashboard
 
 ---
 
-# 📌 Convención de Respuestas API (GET & POST)
+## Características principales
 
-## 🔹 GET (obtener datos)
-
-| Escenario                       | Código HTTP     | Respuesta JSON                                 |
-| ------------------------------- | --------------- | ---------------------------------------------- |
-| ✅ Con resultados (lista)       | `200 OK`        | `[ { "id": 1, "nombre": "Paciente Adulto" } ]` |
-| ✅ Con resultado (recurso)      | `200 OK`        | `{ "id": 1, "nombre": "Paciente Adulto" }`     |
-| ✅ Sin resultados (lista vacía) | `200 OK`        | `[]`                                           |
-| ❌ Recurso no encontrado        | `404 Not Found` | `{ "error": "Recurso no encontrado" }`         |
-
----
-
-## 🔹 POST (crear recurso o acción, ej: registro/login)
-
-| Escenario                         | Código HTTP                 | Respuesta JSON                               |
-| --------------------------------- | --------------------------- | -------------------------------------------- |
-| ✅ Creación exitosa               | `201 Created`               | `{ "id": 101, "nombre": "Juan Pérez" }`      |
-| ✅ Acción exitosa (ej: login)     | `200 OK`                    | `{"id": 101, "nombre": "Juan Pérez" }`       |
-| ❌ Datos inválidos / conflicto    | `400 Bad Request`           | `{ "error": "El email ya está registrado" }` |
-| ❌ Usuario no encontrado (login)  | `404 Not Found`             | `{ "error": "Usuario no encontrado" }`       |
-| ❌ Credenciales inválidas (login) | `401 Unauthorized`          | `{ "error": "Credenciales inválidas" }`      |
-| ❌ Error interno                  | `500 Internal Server Error` | `{ "error": "Ocurrió un error inesperado" }` |
-
-## 📂 Estructura del proyecto
-
-### 📁 Descripción de carpetas y archivos
-
-- **data/**  
-  Mockups o datos temporales para pruebas.  
-  Ejemplo: `users.json`.
-
-- **controllers/**  
-  Contienen la lógica de negocio para cada recurso de la API.  
-  Ejemplo: `userController.js`.
-
-- **middlewares/**  
-  Funciones intermedias para validación, manejo de errores, autenticación, etc.  
-  Ejemplo: `errorHandler.js`, `authMiddleware.js`.
-
-- **models/**  
-  Definen la estructura de los datos (más adelante conectados a una base de datos).  
-  Ejemplo: `userModel.js`.
-
-- **routes/**  
-  Definen las rutas y endpoints de la API, vinculando con los controladores.  
-  Ejemplo: `userRoutes.js`.
-
-- **utils/**  
-  Funciones auxiliares reutilizables.  
-  Ejemplo: `logger.js`, `readJSON.js`.
-
-- **api.js**  
-  Punto de entrada de la aplicación Express. Configura middlewares globales, rutas y levanta el servidor en el puerto **3000**.
-
-- **.gitignore**  
-  Archivos y carpetas ignorados en el repositorio (`node_modules`, `.env`).
-
-- **package.json**  
-  Define dependencias, scripts y configuración básica del proyecto.
-
-- **package-lock.json**  
-  Guarda las versiones exactas de las dependencias instaladas.
+| Área                 | Detalle                                                                         |
+| -------------------- | ------------------------------------------------------------------------------- |
+| **Arquitectura**     | Hexagonal (Ports & Adapters) — 18 módulos de dominio                            |
+| **Runtime**          | Node.js 20 LTS + Express 5                                                      |
+| **Base de datos**    | MySQL 8.0 (schema completo en `db/init.sql`)                                    |
+| **Autenticación**    | JWT + cookies HttpOnly / Argon2id                                               |
+| **Tests**            | 1 389 tests unitarios + 91 escenarios BDD — cobertura **93 %**                  |
+| **Mutation Testing** | Stryker — score **85.67%** (umbral alto: 80%)                                   |
+| **Observabilidad**   | `/health` (liveness probe) + `/metrics` (Prometheus)                            |
+| **Documentación**    | Swagger UI en `/api/api-docs` (seguridad global cookieAuth)                     |
+| **CI/CD**            | GitHub Actions — 6 jobs: tests + lint + commitlint + integración + BDD + deploy |
+| **GitOps**           | Watchtower pull-based + reconcile.sh + deploy.yml (ADR-0005)                    |
 
 ---
 
-## ⚡ Instalación y uso
+## Inicio rápido
 
-1. **Clonar el repositorio**  
-   `git clone <url-del-repo>`
-   `cd hc-backend`
-
-2. **Instalar dependencias**
-   `npm install`
-
-3. **Levantar el servidor en desarrollo**
-   `npm run dev`
-   El backend quedara disponible en localhost:3000/api, por ahora funciona el localhost:3000/api/users
-
----
-
-## 🏗️ Flujo de Trabajo con Git
-
-El flujo de trabajo del proyecto se basa en el uso de ramas para cada nueva tarea, ya sea una funcionalidad, un componente o un arreglo. Esto nos permite trabajar de forma paralela sin interferir en el trabajo de los demás.
-
-**Pasos:**
-
-1.  **Crear una nueva rama**: Antes de empezar a trabajar en una tarea, crea una rama específica desde la rama principal (`main` o `develop`).
-
-    ```bash
-    git checkout -b nombre-de-la-rama
-    ```
-
-2.  **Realizar commits**: A medida que trabajas, haz `commits` en esta nueva rama para guardar tus cambios. Utiliza mensajes de `commit` descriptivos.
-
-    ```bash
-    git commit -m "add new user"
-    ```
-
-3.  **Subir la rama**: Una vez que hayas terminado la tarea, sube tu rama al repositorio remoto para que otros la puedan ver y revisar.
-    ```bash
-    git push origin nombre-de-la-rama
-    ```
-
----
-
-## 🏷️ Convención de Nombres para Ramas
-
-Para mantener la coherencia y la claridad, usaremos una convención de nombres para las ramas. El formato es `<tipo>/<descripcion-de-la-tarea>`.
-
-**Tipos de ramas comunes:**
-
-- `feat`: Para una **nueva funcionalidad** o característica.
-  - **Ejemplo:** `feat/add-contact-form`
-- `fix`: Para una **corrección de errores** (bug fix).
-  - **Ejemplo:** `fix/correct-email-validation`
-- `docs`: Para cambios en la **documentación**.
-  - **Ejemplo:** `docs/update-readme`
-- `refactor`: Para **refactorización** de código que no cambia la funcionalidad.
-  - **Ejemplo:** `refactor/improve-button-structure`
-- `chore`: Para tareas de **mantenimiento** o configuración del proyecto.
-  - **Ejemplo:** `chore/update-dependencies`
-- `test`: Para añadir o modificar **pruebas**.
-  - **Ejemplo:** `test/add-login-unit-tests`
-
-**Consideraciones adicionales:**
-
-- **Minúsculas**: Usa solo letras minúsculas.
-- **Guiones**: Separa las palabras con guiones (`-`).
-- **Sé descriptivo**: La descripción debe ser lo suficientemente clara para que, con solo leer el nombre de la rama, se entienda de qué trata la tarea.
-
----
-
-## 📖 Convenciones
-
-### **📋 Convenciones de Nomenclatura para Front-end**
-
-Para mantener un código limpio y consistente, seguiremos las siguientes convenciones de nomenclatura para el desarrollo del front-end.
-
-#### **1. Nomenclatura en JavaScript**
-
-- **Variables**: Las variables se declararán utilizando **camelCase**.
-  - **Ejemplo**: `vaquitaMarina`
-- **Clases**: Los nombres de las clases se escribirán en **PascalCase**.
-  - **Ejemplo**: `UserModel`
-
----
-
-#### **4. Convención de Idioma**
-
-- Todos los nombres de variables y clases se escribirán en **inglés** para mantener una convención global y evitar ambigüedades.
-  - **Ejemplo**: Usa `userModel` en lugar de `modeloDeUsuario`.
-
----
-
-## Notas
-
-- El repo tiene autoformteo y linteo ya configurado, se activa al momento de
-
----
-
-## 🧪 Suite de Pruebas
-
-El proyecto cuenta con **tres capas de pruebas** que trabajan de forma complementaria para garantizar la calidad del dominio de negocio.
-
-```
-┌─────────────────────────────────────────────────────┐
-│  CAPA 3 — Pruebas de Mutantes (Stryker)             │
-│  "¿Mis pruebas detectan errores reales?"            │
-│  Score global: 93.78% — 498 mutantes analizados     │
-├─────────────────────────────────────────────────────┤
-│  CAPA 2 — Pruebas Unitarias (Vitest)                │
-│  "¿Cada pieza del dominio funciona correctamente?"  │
-│  666 tests en 45 archivos — todos PASS              │
-├─────────────────────────────────────────────────────┤
-│  CAPA 1 — Pruebas BDD (Cucumber)                    │
-│  "¿El sistema se comporta como el usuario espera?"  │
-│  41 escenarios, 160 pasos — todos PASS              │
-└─────────────────────────────────────────────────────┘
-```
-
-### Comandos de prueba
+### Con Docker Compose (recomendado)
 
 ```bash
-# Pruebas unitarias (una sola ejecución)
-npx vitest run
+# Clona el repo
+git clone https://github.com/vaquitamarina/hc-backend.git
+cd hc-backend
 
-# Pruebas unitarias (modo watch — se re-ejecutan al guardar)
+# Configura las variables de entorno
+cp .env.example .env
+# Edita .env con tus valores JWT_SECRET, etc.
+
+# Levanta MySQL + Backend + Prometheus + Grafana
+docker-compose up --build
+```
+
+Servicios disponibles:
+
+| URL                                  | Servicio                |
+| ------------------------------------ | ----------------------- |
+| `http://localhost:3000/api`          | REST API                |
+| `http://localhost:3000/api/api-docs` | Swagger UI              |
+| `http://localhost:3000/health`       | Liveness probe          |
+| `http://localhost:3000/metrics`      | Métricas Prometheus     |
+| `http://localhost:9090`              | Prometheus              |
+| `http://localhost:3001`              | Grafana (admin / admin) |
+
+### Desarrollo local (sin Docker)
+
+```bash
+# Instala dependencias
+npm install
+
+# Configura .env con DB_HOST=localhost y credenciales MySQL locales
+cp .env.example .env
+
+# Inicializa el esquema de BD (requiere MySQL corriendo)
+npm run db:init
+
+# Modo watch (recarga automática)
+npm run dev
+```
+
+---
+
+## Variables de entorno
+
+Copia `.env.example` a `.env` y completa:
+
+```bash
+DB_HOST=localhost          # "mysql" si usas Docker Compose
+DB_USER=hc_user
+DB_PASSWORD=hc_password
+DB_NAME=hc_db
+DB_PORT=3306
+
+JWT_SECRET=<genera con: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))">
+JWT_REFRESH_SECRET=<otro valor aleatorio>
+
+PORT=3000
+NODE_ENV=development
+```
+
+---
+
+## Tests y cobertura
+
+```bash
+# Todos los tests (modo interactivo)
 npm test
 
-# Pruebas BDD / Gherkin
-npx cucumber-js
+# Con reporte de cobertura
+npm run test:ci
 
-# Pruebas de mutantes (genera reporte HTML)
+# Ver reporte HTML de cobertura
+open coverage/index.html
+
+# Pruebas de mutación (Stryker)
 npm run test:mutation
 ```
 
----
-
-### Capa 1 — BDD con Cucumber (Gherkin en español)
-
-Archivos en `features/` escritos en **Gherkin en español** (`# language: es`), siguiendo el patrón **TestingAPI de Alistair Cockburn**: cada módulo tiene un adaptador sustituto que instancia los agregados de dominio directamente, sin pasar por Express ni base de datos real.
-
-#### Escenarios cubiertos
-
-| Feature                    | Escenarios | Módulo de dominio                                              |
-| -------------------------- | ---------- | -------------------------------------------------------------- |
-| `filiacion.feature`        | 5          | Datos del paciente, edad, sexo, fechas                         |
-| `enfermedadActual.feature` | 6          | Síntoma principal obligatorio, campos opcionales               |
-| `motivoConsulta.feature`   | 5          | Motivo de consulta con doble invariante                        |
-| `antecedente.feature`      | 7          | 4 tipos de antecedentes + seguimiento                          |
-| `examenGeneral.feature`    | 5          | Temperatura, peso, presión arterial (normalización silenciosa) |
-| `examenBoca.feature`       | 4          | Examen bucal (solo upsert, sin create)                         |
-| `higieneBocal.feature`     | 5          | Higiene bucal + normalización prefijo `HC-`                    |
-| `examenRegional.feature`   | 4          | Examen regional por secciones                                  |
-| **Total**                  | **41**     | **160 pasos**                                                  |
-
-#### Estructura por módulo BDD
+Cobertura actual (excluyendo capa de infraestructura — ver ADR-0003):
 
 ```
-features/
-├── <modulo>.feature                       # Escenarios en Gherkin español
-├── support/<Modulo>TestingAPI.js          # Adaptador primario sustituto
-└── step_definitions/<modulo>Steps.js      # Steps + InMemoryRepository (Map)
+All files  |  93.34 %  Stmts  |  89.92 %  Branch  |  83.18 %  Funcs
 ```
 
-**Convenciones aplicadas:**
+---
 
-- Cada módulo usa su propio prefijo en el paso de error para evitar conflictos:  
-  `'se debe lanzar un error de <modulo> con el mensaje {string}'`
-- Los repositorios in-memory replican exactamente la interfaz del repositorio real
-- Módulos sin `create` (`examenBoca`, `higieneBocal`) usan semántica **upsert** en el stub
-- Hook `Before` por escenario garantiza aislamiento total de estado
+## Estructura del proyecto
+
+```
+hc-backend/
+├── api.js                      # Entry point: Express + Swagger + métricas
+├── db/
+│   ├── db.js                   # Pool MySQL (wrapper pg → mysql2)
+│   └── init.sql                # Schema + stored procedures + seed data
+├── routes/
+│   ├── index.js                # Router raíz /api
+│   ├── healthRoutes.js         # GET /health
+│   ├── metricsRoutes.js        # GET /metrics (Prometheus)
+│   ├── hcRoutes.js             # Historia clínica + todos los módulos
+│   ├── userRoutes.js           # Auth + usuarios
+│   ├── patientRoutes.js        # Pacientes
+│   └── ...
+├── {modulo}/                   # Por cada uno de los 18 módulos:
+│   ├── domain/                 #   Value Objects, Aggregates, I*Repository
+│   ├── application/            #   Controller (adaptador primario)
+│   └── infrastructure/         #   *Repository (adaptador secundario)
+├── middlewares/
+│   ├── authMiddleware.js       # JWT cookie validation
+│   └── prometheusMiddleware.js # Instrumentación automática HTTP
+├── services/
+│   ├── tokenService.js
+│   └── cookieServices.js
+├── docs/                       # Swagger JSDoc + documentación
+│   ├── adr/                    # 4 Architecture Decision Records
+│   ├── SCM_PLAN.md             # IEEE 828 SCM Plan
+│   ├── SLO.md                  # Service Level Objectives
+│   ├── SAD.md                  # Software Architecture Document
+│   ├── GIT_FLOW.md             # Guía de Git Flow
+│   └── GLOSARIO_LENGUAJE_UBICUO.md
+├── observability/
+│   ├── prometheus.yml          # Config de scrape
+│   └── grafana/                # Datasource + dashboard provisioning
+├── test/                       # 79 archivos de test (Vitest)
+├── .github/workflows/ci.yml    # CI/CD: tests + lint + integración + deploy
+├── docker-compose.yml          # MySQL + Backend + Frontend + Prometheus + Grafana
+├── Dockerfile
+├── commitlint.config.js        # Conventional Commits enforcement
+└── .husky/                     # Git hooks: pre-commit (lint) + commit-msg
+```
 
 ---
 
-### Capa 2 — Pruebas Unitarias de Dominio (Vitest)
+## API REST — Endpoints principales
 
-Archivos en `test/*.domain.test.js` que prueban directamente las clases de dominio (Value Objects y Aggregates) sin ninguna dependencia externa.
+| Método     | Ruta                                 | Descripción               |
+| ---------- | ------------------------------------ | ------------------------- |
+| `POST`     | `/api/users/login`                   | Iniciar sesión            |
+| `POST`     | `/api/users/register`                | Registrar usuario         |
+| `GET`      | `/api/users/me`                      | Usuario autenticado       |
+| `POST`     | `/api/patients`                      | Crear paciente            |
+| `POST`     | `/api/hc/draft`                      | Obtener/crear borrador HC |
+| `PATCH`    | `/api/hc/assign-patient`             | Asignar paciente a HC     |
+| `GET`      | `/api/hc/:id/patient`                | Paciente de una HC        |
+| `GET/PUT`  | `/api/hc/filiacion/historia/:id`     | Datos personales          |
+| `GET/PUT`  | `/api/hc/:id/examen-general`         | Examen físico general     |
+| `GET/PUT`  | `/api/hc/:id/examen-boca`            | Examen clínico bucal      |
+| `GET/PUT`  | `/api/hc/:id/higiene`                | Higiene oral (IHOS)       |
+| `GET/PUT`  | `/api/hc/:id/diagnostico-presuntivo` | Diagnóstico presuntivo    |
+| `GET/POST` | `/api/hc/:id/evolucion`              | Evolución del tratamiento |
+| `GET`      | `/api/catalogo/:nombre`              | Catálogos clínicos        |
+| `GET`      | `/health`                            | Liveness probe            |
+| `GET`      | `/metrics`                           | Métricas Prometheus       |
 
-#### Archivos de pruebas de dominio
-
-| Archivo                                | Tests | Qué cubre                                                                         |
-| -------------------------------------- | ----- | --------------------------------------------------------------------------------- |
-| `test/filiacion.domain.test.js`        | 45    | `EdadClinicaVO` [0–130], `FechaClinicaVO`, `#normalizeSexo`, `FiliacionAggregate` |
-| `test/enfermedadActual.domain.test.js` | 39    | `IdHistoriaClinicaVO`, `TextoClinicoObligatorioVO`, `EnfermedadActualAggregate`   |
-| `test/motivoConsulta.domain.test.js`   | 44    | `MotivoConsultaVO` (invariante tipo + vacío), `MotivoConsultaAggregate`           |
-| `test/antecedente.domain.test.js`      | 86    | `EnteroNoNegativoVO`, `FechaClinicaVO`, 4 aggregates                              |
-| `test/examenGeneral.domain.test.js`    | 92    | `TemperaturaVO`, `PesoVO`, `PresionArterialVO`, aliases camelCase/snake_case      |
-
-**Técnicas aplicadas:**
-
-- **BVA (Boundary Value Analysis):** se prueba el valor en el límite, justo debajo y justo encima
-- **Mensajes de error exactos:** `toThrow('El sintoma principal es obligatorio')` sin aproximaciones
-- **`obtenerParametros()` con índices posicionales:** verifica el orden correcto del array SQL
-- **`Object.freeze`:** se intenta mutar propiedades para confirmar inmutabilidad
-- **Normalización silenciosa:** `TemperaturaVO(100)` → `null` sin lanzar excepción
+Documentación completa interactiva: **`http://localhost:3000/api/api-docs`**
 
 ---
 
-### Capa 3 — Pruebas de Mutantes (Stryker 9.6.1)
+## Convención de commits
 
-Stryker introduce pequeños errores sintácticos en el código fuente (mutantes) y verifica que las pruebas unitarias los detecten. Si una prueba pasa con el código roto → el mutante **sobrevive** (problema). Si la prueba falla → el mutante es **eliminado** (correcto).
+Este proyecto usa [Conventional Commits](https://www.conventionalcommits.org/).
+El hook `commit-msg` (Husky + commitlint) bloquea commits que no cumplan el formato:
 
-#### Resultados por módulo
+```
+<type>(<scope>): <descripción en imperativo, minúsculas>
 
-| Módulo                      | Score       | Muertos       | Sobrevividos |
-| --------------------------- | ----------- | ------------- | ------------ |
-| `motivoConsultaDomain.js`   | **100%** 🎯 | 47 / 47       | 0            |
-| `filiacionDomain.js`        | **98.2%**   | 109 / 111     | 2            |
-| `antecedenteDomain.js`      | **94.5%**   | 103 / 109     | 6            |
-| `enfermedadActualDomain.js` | **93.0%**   | 66 / 71       | 5            |
-| `examenGeneralDomain.js`    | **88.75%**  | 142 / 160     | 18           |
-| **TOTAL**                   | **93.78%**  | **467 / 498** | **31**       |
+Refs #42
+```
 
-> Los 31 mutantes que sobreviven son en su mayoría **mutantes equivalentes** — versiones del código que producen exactamente el mismo comportamiento observable para todas las entradas posibles. No se pueden eliminar sin crear falsos positivos.
+Tipos: `feat` | `fix` | `docs` | `refactor` | `test` | `chore` | `ci` | `perf`
 
-#### Tipos de mutaciones analizadas
+Activa la plantilla: `git config commit.template .gitmessage`
 
-| Tipo                    | Ejemplo de mutación                        |
-| ----------------------- | ------------------------------------------ |
-| `ConditionalExpression` | `parsedValue < 0` → `parsedValue <= 0`     |
-| `LogicalOperator`       | `body.campo \|\| body.campo_snake` → `&&`  |
-| `StringLiteral`         | `'DomainError'` → `""`                     |
-| `Regex`                 | `/^UUID$/` → `/UUID$/` (elimina ancla `^`) |
-| `MethodExpression`      | `String(value).trim()` → `String(value)`   |
-| `BlockStatement`        | Elimina todo el bloque `if { ... }`        |
+---
 
-#### Reporte HTML interactivo
+## Observabilidad
 
 ```bash
-npm run test:mutation
-# → abre: reports/mutation/mutation.html
-```
+# Verificar que el servidor está sano
+curl http://localhost:3000/health
 
-El reporte muestra cada mutante, qué prueba lo eliminó y cuáles sobrevivieron con su explicación.
+# Ver métricas en formato Prometheus
+curl http://localhost:3000/metrics | head -20
 
-#### Configuración (stryker.config.mjs)
-
-```js
-export default {
-  testRunner: 'vitest',
-  mutate: [
-    'filiacion/domain/filiacionDomain.js',
-    'enfermedadActual/domain/enfermedadActualDomain.js',
-    'motivoConsulta/domain/motivoConsultaDomain.js',
-    'antecedente/domain/antecedenteDomain.js',
-    'examenGeneral/domain/examenGeneralDomain.js',
-  ],
-  thresholds: { high: 80, low: 60, break: 0 },
-  reporters: ['progress', 'html', 'clear-text'],
-};
+# Dashboard Grafana (pre-configurado, no requiere setup manual)
+open http://localhost:3001
+# Login: admin / admin
+# Dashboard: "HC Backend — SRE Dashboard"
 ```
 
 ---
 
-### Dependencias de prueba instaladas
+## Documentación técnica
 
-| Paquete                          | Versión | Propósito                      |
-| -------------------------------- | ------- | ------------------------------ |
-| `vitest`                         | ^4.0.15 | Framework de pruebas unitarias |
-| `@vitest/coverage-v8`            | ^4.0.15 | Cobertura de código            |
-| `@cucumber/cucumber`             | ^12.9.0 | Framework BDD / Gherkin        |
-| `@stryker-mutator/core`          | ^9.6.1  | Motor de pruebas de mutantes   |
-| `@stryker-mutator/vitest-runner` | ^9.6.1  | Integración Stryker + Vitest   |
-| `supertest`                      | ^7.2.2  | Pruebas de endpoints HTTP      |
+| Documento                                | Descripción                                         |
+| ---------------------------------------- | --------------------------------------------------- |
+| [`docs/SAD.md`](./docs/SAD.md)           | Software Architecture Document (vistas C4, ADRs)    |
+| [`docs/SCM_PLAN.md`](./docs/SCM_PLAN.md) | Plan IEEE 828 de Gestión de Configuración           |
+| [`docs/SLO.md`](./docs/SLO.md)           | Service Level Objectives (disponibilidad, latencia) |
+| [`docs/GIT_FLOW.md`](./docs/GIT_FLOW.md) | Guía de trabajo con Git Flow                        |
+| [`docs/adr/`](./docs/adr/)               | Architecture Decision Records (ADR-0001 a ADR-0004) |
+| [`CHANGELOG.md`](./CHANGELOG.md)         | Historial de cambios (Keep a Changelog)             |
+
+---
+
+## Convenciones de respuesta HTTP
+
+| Situación                       | Código                      |
+| ------------------------------- | --------------------------- |
+| Lectura exitosa                 | `200 OK`                    |
+| Creación exitosa                | `201 Created`               |
+| Error de validación / dominio   | `400 Bad Request`           |
+| No autenticado                  | `401 Unauthorized`          |
+| Recurso no encontrado           | `404 Not Found`             |
+| Conflicto (DNI duplicado, etc.) | `409 Conflict`              |
+| Error interno                   | `500 Internal Server Error` |
+| BD no disponible                | `503 Service Unavailable`   |
+
+---
+
+_Proyecto académico — Ingeniería de Software II 2026-I, UNJBG._

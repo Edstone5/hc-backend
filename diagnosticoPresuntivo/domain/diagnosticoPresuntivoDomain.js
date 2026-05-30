@@ -1,5 +1,3 @@
-import pool from '../../db/db.js';
-
 class DomainError extends Error {
   constructor(message) {
     super(message);
@@ -84,38 +82,37 @@ class DiagnosticoPresuntivoAggregate {
   }
 }
 
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Diagnóstico Presuntivo.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IDiagnosticoPresuntivoRepository {
+  /**
+   * Recupera el diagnóstico presuntivo vigente de una historia clínica.
+   * @param {string} _idHistory - UUID de la historia clínica.
+   * @returns {Promise<{descripcion: string}>}
+   * @abstract
+   */
+  async consultarPorHistoria(_idHistory) {
+    throw new Error(
+      'IDiagnosticoPresuntivoRepository.consultarPorHistoria() no implementado'
+    );
+  }
+
+  /**
+   * Persiste el diagnóstico presuntivo de una historia clínica.
+   * @param {DiagnosticoPresuntivoAggregate} _agregado - Aggregate Root validado.
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async actualizarDiagnosticoPresuntivo(_agregado) {
+    throw new Error(
+      'IDiagnosticoPresuntivoRepository.actualizarDiagnosticoPresuntivo() no implementado'
+    );
+  }
+}
+
 export { DomainError, DiagnosticoPresuntivoAggregate };
-
-export async function consultarDiagnosticoPresuntivo(idHistory) {
-  const id = stripHCPrefix(String(idHistory || ''));
-  if (!id) {
-    return { descripcion: '' };
-  }
-  const result = await pool.query(
-    `SELECT descripcion FROM diagnostico WHERE id_historia = $1 AND tipo = 'presuntivo' ORDER BY fecha DESC NULLS LAST LIMIT 1`,
-    [id]
-  );
-  if (!result.rows[0]) {
-    return { descripcion: '' };
-  }
-  return { descripcion: result.rows[0].descripcion || '' };
-}
-
-export async function actualizarDiagnosticoPresuntivo(aggregateOrObj) {
-  try {
-    let agg = null;
-    if (aggregateOrObj instanceof DiagnosticoPresuntivoAggregate) {
-      agg = aggregateOrObj;
-    } else {
-      agg = new DiagnosticoPresuntivoAggregate(aggregateOrObj);
-    }
-    await pool.query('CALL i_diagnostico_presuntivo($1, $2, $3)', [
-      agg._idHistory.toString(),
-      agg._descripcion.value,
-      agg._idUsuario.toString(),
-    ]);
-    return true;
-  } catch (error) {
-    throw error;
-  }
-}

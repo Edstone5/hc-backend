@@ -99,3 +99,44 @@ export class MotivoConsultaAggregate {
     return this.#motivo.value;
   }
 }
+
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Motivo de Consulta.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IMotivoConsultaRepository {
+  /**
+   * Persiste el motivo de consulta de una historia clínica.
+   * @param {MotivoConsultaAggregate} _agregado
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async create(_agregado) {
+    throw new Error('IMotivoConsultaRepository.create() no implementado');
+  }
+
+  /**
+   * Recupera el motivo de consulta de una historia clínica.
+   * @param {string} _id_historia
+   * @returns {Promise<Object|undefined>}
+   * @abstract
+   */
+  async getByHistoria(_id_historia) {
+    throw new Error(
+      'IMotivoConsultaRepository.getByHistoria() no implementado'
+    );
+  }
+
+  /**
+   * Actualiza el motivo de consulta de una historia clínica existente.
+   * @param {MotivoConsultaAggregate} _agregado
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async update(_agregado) {
+    throw new Error('IMotivoConsultaRepository.update() no implementado');
+  }
+}

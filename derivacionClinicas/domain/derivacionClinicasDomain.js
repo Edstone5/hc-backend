@@ -144,4 +144,37 @@ class DerivacionClinicasAggregate {
   }
 }
 
+// ── Puerto de persistencia (Arquitectura Hexagonal) ──────────────────────────
+
+/**
+ * Contrato del adaptador secundario de Derivación a Clínicas.
+ * Todo repositorio concreto debe extender esta clase abstracta.
+ * @abstract
+ */
+export class IDerivacionClinicasRepository {
+  /**
+   * Recupera la derivación de clínicas de una historia clínica.
+   * @param {string} _idHistory
+   * @returns {Promise<Object|null>}
+   * @abstract
+   */
+  async consultarPorHistoria(_idHistory) {
+    throw new Error(
+      'IDerivacionClinicasRepository.consultarPorHistoria() no implementado'
+    );
+  }
+
+  /**
+   * Persiste la derivación a clínicas especializadas.
+   * @param {DerivacionClinicasAggregate} _agregado
+   * @returns {Promise<boolean>}
+   * @abstract
+   */
+  async actualizarDerivacionClinicas(_agregado) {
+    throw new Error(
+      'IDerivacionClinicasRepository.actualizarDerivacionClinicas() no implementado'
+    );
+  }
+}
+
 export { DomainError, DerivacionClinicasAggregate };

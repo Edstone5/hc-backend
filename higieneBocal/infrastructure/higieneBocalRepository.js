@@ -1,6 +1,7 @@
+import { IHigieneBocalRepository } from '../domain/higieneBocalDomain.js';
 import pool from '../../db/db.js';
 
-class HigieneBocalRepository {
+class HigieneBocalRepository extends IHigieneBocalRepository {
   async consultarPorHistoria(idHistory) {
     const result = await pool.query(
       'SELECT estado_higiene FROM examen_higiene_oral WHERE id_historia = $1',
@@ -10,9 +11,7 @@ class HigieneBocalRepository {
     if (!data) {
       return null;
     }
-    return {
-      estadoHigiene: data.estado_higiene,
-    };
+    return { estadoHigiene: data.estado_higiene };
   }
 
   async actualizarHigieneBocal(dataOrAggregate) {
@@ -24,8 +23,23 @@ class HigieneBocalRepository {
             dataOrAggregate?.estadoHigiene,
             dataOrAggregate?.idUsuario,
           ];
+    const [idHistory, estadoHigiene] = params;
 
-    await pool.query('CALL i_examen_higiene_oral($1, $2, $3)', params);
+    const existing = await pool.query(
+      'SELECT id_higiene FROM examen_higiene_oral WHERE id_historia = $1',
+      [idHistory]
+    );
+    if (existing.rows[0]) {
+      await pool.query(
+        'UPDATE examen_higiene_oral SET estado_higiene = $1 WHERE id_historia = $2',
+        [estadoHigiene, idHistory]
+      );
+    } else {
+      await pool.query(
+        'INSERT INTO examen_higiene_oral (id_historia, estado_higiene) VALUES ($1, $2)',
+        [idHistory, estadoHigiene]
+      );
+    }
     return true;
   }
 }

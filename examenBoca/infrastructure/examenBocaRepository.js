@@ -1,24 +1,16 @@
+import { IExamenBocaRepository } from '../domain/examenBocaDomain.js';
 import pool from '../../db/db.js';
 
-/**
- * Repositorio de examen de boca (Adaptador Secundario) para PostgreSQL.
- */
-export class ExamenBocaRepository {
-  /**
-   * @param {string} idHistoria
-   * @returns {Promise<Object|null>}
-   */
+export class ExamenBocaRepository extends IExamenBocaRepository {
   async getByHistoria(idHistoria) {
     const result = await pool.query(
       'SELECT * FROM examen_clinico_boca WHERE id_historia = $1',
       [idHistoria]
     );
-
     const data = result.rows[0];
     if (!data) {
       return null;
     }
-
     return {
       labiosSin: data.labios_sin_lesiones,
       labiosCon: data.labios_con_lesiones,
@@ -61,24 +53,36 @@ export class ExamenBocaRepository {
     };
   }
 
-  /**
-   * @param {{ obtenerParametros: () => Array<unknown> }} agregado
-   * @returns {Promise<boolean>}
-   */
   async update(agregado) {
+    const p = agregado.obtenerParametros();
+    // p[0]=id_historia, p[1..38]=campos
     await pool.query(
-      `CALL u_examen_clinico_boca(
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-          $11, $12, $13, $14, $15, $16, $17, $18, $19, $20,
-          $21, $22, $23, $24, $25, $26, $27, $28, $29, $30,
-          $31, $32, $33, $34, $35, $36, $37, $38, $39
-        )`,
-      agregado.obtenerParametros()
+      `UPDATE examen_clinico_boca SET
+        labios_sin_lesiones=$2, labios_con_lesiones=$3,
+        vestibulo_sin_lesiones=$4, vestibulo_con_lesiones=$5,
+        carrillos_retromolar_sin_lesiones=$6, carrillos_retromolar_con_lesiones=$7,
+        paladar_sin_lesiones=$8, paladar_con_lesiones=$9,
+        orofaringe_sin_lesiones=$10, orofaringe_con_lesiones=$11,
+        piso_boca_sin_lesiones=$12, piso_boca_con_lesiones=$13,
+        lengua_sin_lesiones=$14, lengua_con_lesiones=$15,
+        encia_sin_lesiones=$16, encia_con_lesiones=$17,
+        oclusion_molar_der=$18, oclusion_molar_izq=$19,
+        oclusion_canina_der=$20, oclusion_canina_izq=$21,
+        oclusion_mordida_cruzada=$22, oclusion_vestibuloclusion=$23,
+        oclusion_overbite=$24, oclusion_mordida_abierta=$25,
+        oclusion_sobremordida=$26, oclusion_relacion_vertical_otros=$27,
+        oclusion_overjet=$28, oclusion_protrusion=$29,
+        oclusion_guia_incisiva=$30, oclusion_contacto_posterior=$31,
+        lat_der_guia_canina=$32, lat_der_funcion_grupo=$33,
+        lat_der_contacto_balance=$34, lat_der_describa=$35,
+        lat_izq_guia_canina=$36, lat_izq_funcion_grupo=$37,
+        lat_izq_contacto_balance=$38, lat_izq_describa=$39
+       WHERE id_historia=$1`,
+      p
     );
     return true;
   }
 }
 
 const examenBocaRepository = new ExamenBocaRepository();
-
 export default examenBocaRepository;
