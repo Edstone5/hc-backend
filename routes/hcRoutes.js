@@ -25,6 +25,7 @@ import { FichaOperacionController } from '../fichaOperacion/application/fichaOpe
 import { FichaEvaluacionController } from '../fichaEvaluacion/application/fichaEvaluacionController.js';
 import { CitaController } from '../cita/application/citaController.js';
 import { AuditoriaController } from '../auditoria/application/auditoriaController.js';
+import { ConsentimientoController } from '../consentimiento/application/consentimientoController.js';
 
 export const hcRoutes = Router();
 
@@ -299,6 +300,21 @@ hcRoutes.post(
 hcRoutes.get(
   '/docente/evaluaciones',
   FichaEvaluacionController.listarPorDocente
+);
+
+// --- CONSENTIMIENTO INFORMADO (RF-09) ---
+hcRoutes.get('/:id/consentimiento', ConsentimientoController.listar);
+hcRoutes.post('/:id/consentimiento', ConsentimientoController.registrar);
+hcRoutes.delete(
+  '/:id/consentimiento/:idConsentimiento',
+  ConsentimientoController.eliminar
+);
+
+// --- EXPORTACIÓN PDF (RF-08) ---
+// POST vacío cuya única función es ser capturado por auditoriaMW.
+// El middleware registra usuario, IP, timestamp y el id de la HC automáticamente.
+hcRoutes.post('/:id/exportar-pdf', (req, res) =>
+  res.status(200).json({ ok: true })
 );
 
 // --- CITAS ---

@@ -537,6 +537,31 @@ CREATE TABLE IF NOT EXISTS ficha_evaluacion (
 );
 
 -- ============================================================
+-- SECCIÓN 9b: CONSENTIMIENTO INFORMADO (RF-09)
+-- Añadido en migración 001_consentimiento_informado.sql
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS consentimiento_informado (
+  id_consentimiento    CHAR(36)     NOT NULL PRIMARY KEY,
+  id_historia          CHAR(36)     NOT NULL,
+  tipo_template        VARCHAR(50)  NOT NULL
+    COMMENT 'adulto_general|cirugia_oral|menor_de_edad|anestesia_local',
+  nombre_paciente      VARCHAR(300) NOT NULL,
+  nombre_responsable   VARCHAR(300) NULL
+    COMMENT 'Para tipo menor_de_edad: nombre del padre/madre/tutor',
+  fecha_consentimiento DATE         NOT NULL DEFAULT (CURRENT_DATE),
+  firmado              TINYINT(1)   NOT NULL DEFAULT 0
+    COMMENT 'Reservado para firma digital futura',
+  id_usuario           CHAR(36)     NULL,
+  created_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (id_historia) REFERENCES historia_clinica(id_historia) ON DELETE CASCADE,
+  FOREIGN KEY (id_usuario)  REFERENCES usuario(id_usuario) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_consentimiento_historia
+  ON consentimiento_informado (id_historia, created_at);
+
+-- ============================================================
 -- SECCIÓN 10: NOTIFICACIONES
 -- ============================================================
 

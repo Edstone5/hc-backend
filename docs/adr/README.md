@@ -11,13 +11,16 @@ la motivó, las opciones consideradas, la decisión tomada y sus consecuencias.
 
 ## Índice
 
-| ID       | Título                                                         | Estado      |
-| -------- | -------------------------------------------------------------- | ----------- |
-| ADR-0001 | Corrección de violaciones de la capa de dominio                | Aceptado ✅ |
-| ADR-0002 | Introducción de interfaces de puerto en la capa de dominio     | Aceptado ✅ |
-| ADR-0003 | Migración de PostgreSQL a MySQL                                | Aceptado ✅ |
-| ADR-0004 | Observabilidad con Prometheus y Grafana (prom-client)          | Aceptado ✅ |
-| ADR-0005 | Estrategia de despliegue GitOps (Watchtower + SSH + reconcile) | Aceptado ✅ |
+| ID       | Título                                                                                      | Estado      |
+| -------- | ------------------------------------------------------------------------------------------- | ----------- |
+| ADR-0001 | Corrección de violaciones de la capa de dominio                                             | Aceptado ✅ |
+| ADR-0002 | Introducción de interfaces de puerto en la capa de dominio                                  | Aceptado ✅ |
+| ADR-0003 | Migración de PostgreSQL a MySQL                                                             | Aceptado ✅ |
+| ADR-0004 | Observabilidad con Prometheus y Grafana (prom-client)                                       | Aceptado ✅ |
+| ADR-0005 | Estrategia de despliegue GitOps (Watchtower + SSH + reconcile)                              | Aceptado ✅ |
+| ADR-0006 | Módulo de Consentimiento Informado — estrategia de templates y persistencia (RF-09)         | Aceptado ✅ |
+| ADR-0007 | Mejora de exportación PDF — auditoría, header con usuario, paginación (RF-08)               | Aceptado ✅ |
+| ADR-0008 | Consolidación del Odontograma en Examen Físico — eliminación del link independiente (RF-06) | Aceptado ✅ |
 
 ---
 

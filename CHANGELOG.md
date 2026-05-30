@@ -7,6 +7,89 @@ y este proyecto adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
 ---
 
+## [2.2.0] — 2026-05-30
+
+> **Baseline BL-04** — Requisitos RF-06, RF-08 y RF-09 completados.
+> Módulo de Consentimiento Informado (nuevo), mejora de exportación PDF,
+> y consolidación del Odontograma dentro de Examen Físico.
+
+### Añadido
+
+#### RF-09: Módulo de Consentimiento Informado (nuevo módulo completo)
+
+- **`consentimiento/domain/consentimientoDomain.js`** — Capa de dominio con
+  Value Objects (`IdHistoriaVO`, `TipoTemplateVO`, `NombrePacienteVO`),
+  `ConsentimientoAggregate` e interfaz `IConsentimientoRepository`.
+  Valida 4 tipos de template: `adulto_general`, `cirugia_oral`,
+  `menor_de_edad`, `anestesia_local`.
+  _Justificación: todo módulo nuevo sigue el patrón DDD existente para
+  mantener la consistencia arquitectónica y facilitar el testing._
+
+- **`consentimiento/application/consentimientoController.js`** — Controlador
+  con 3 handlers: `listar`, `registrar`, `eliminar`.
+
+- **`consentimiento/infrastructure/consentimientoRepository.js`** — Repositorio
+  con queries SQL compatibles MySQL/PostgreSQL (usa dialect check del pool).
+
+- **`db/migrations/001_consentimiento_informado.sql`** — Migración independiente
+  para bases de datos ya existentes. Crea tabla `consentimiento_informado` e
+  índice `idx_consentimiento_historia`.
+  _Justificación: separar la migración del init.sql permite aplicarla de forma
+  controlada en instancias de producción sin reinicializar la BD._
+
+- **`db/init.sql`** — Sección `9b` añadida con la tabla `consentimiento_informado`
+  para que nuevas instalaciones incluyan la tabla desde el inicio.
+
+- **Nuevas rutas en `routes/hcRoutes.js`**:
+  - `GET  /hc/:id/consentimiento` — listar consentimientos de una HC
+  - `POST /hc/:id/consentimiento` — registrar nuevo consentimiento
+  - `DELETE /hc/:id/consentimiento/:idConsentimiento` — eliminar
+
+#### RF-08: Endpoint de auditoría de exportaciones PDF
+
+- **`POST /hc/:id/exportar-pdf`** añadido en `routes/hcRoutes.js`.
+  Endpoint sin lógica de negocio cuyo único propósito es ser interceptado
+  por `auditoriaMW`, que registra automáticamente usuario, IP, timestamp
+  e `id_historia` en la tabla `auditoria`.
+  _Justificación: la exportación de documentos clínicos es una acción
+  sensible que debe quedar trazada. Aprovechar el middleware existente
+  es la intervención mínima sin duplicar código._
+
+### Estructura de módulos actualizada
+
+| Módulo           | Dominio  | Aplicación     | Infraestructura |
+| ---------------- | -------- | -------------- | --------------- |
+| `consentimiento` | ✅ nuevo | ✅ nuevo       | ✅ nuevo        |
+| `hcRoutes`       | —        | 2 rutas nuevas | —               |
+
+### Tabla de BD nueva
+
+```sql
+consentimiento_informado (
+  id_consentimiento    CHAR(36)  PK,
+  id_historia          CHAR(36)  FK → historia_clinica,
+  tipo_template        VARCHAR(50),  -- adulto_general | cirugia_oral | menor_de_edad | anestesia_local
+  nombre_paciente      VARCHAR(300),
+  nombre_responsable   VARCHAR(300) NULL,
+  fecha_consentimiento DATE,
+  firmado              TINYINT(1) DEFAULT 0,  -- reservado para firma digital futura
+  id_usuario           CHAR(36)  FK → usuario,
+  created_at           DATETIME
+)
+```
+
+### Métricas (v2.2.0)
+
+| Métrica              | v2.1.0 | v2.2.0  |
+| -------------------- | ------ | ------- |
+| Módulos de dominio   | 20     | **21**  |
+| Rutas en hcRoutes    | 47     | **51**  |
+| Tablas en schema BD  | 33     | **34**  |
+| Migraciones          | 0      | **1**   |
+| RFs cubiertos (MUST) | 80%    | **86%** |
+
+---
+
 ## [2.1.0] — 2026-05
 
 > **Baseline BL-03** — GitOps completo + Mutation Testing mejorado + CI de 6 jobs.
