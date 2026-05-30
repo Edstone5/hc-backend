@@ -43,3 +43,14 @@ mysql -u root -p hc_db < db/migrations/005_examen_periodontal_basico.sql
 
 > Nota: en despliegues NUEVOS, `db/init.sql` ya incluye todas estas tablas y
 > columnas; el runner es solo para actualizar bases ya existentes.
+
+## Diferencia de tipos por dialecto (importante)
+
+En la BD **PostgreSQL/NeonDB** del proyecto, las claves (`id_historia`,
+`id_usuario`, ...) son de tipo **`uuid`** nativo; en MySQL son `CHAR(36)`. Un
+`FOREIGN KEY` exige que el tipo coincida con la columna referenciada, así que el
+runner `db/migrate.js` usa automáticamente `UUID` en PostgreSQL y `CHAR(36)` en
+MySQL (helper `IDT`).
+
+Si aplicas los archivos `.sql` sueltos contra PostgreSQL, reemplaza `CHAR(36)`
+por `UUID` en las columnas de id (o usa el runner, que ya lo resuelve).

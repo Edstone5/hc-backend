@@ -25,6 +25,10 @@ const isMysql = pool.dialect === 'mysql';
 const TEXT_LARGE = isMysql ? 'LONGTEXT' : 'TEXT';
 const DT = isMysql ? 'DATETIME' : 'TIMESTAMP';
 const DEF_DATE = isMysql ? 'DEFAULT (CURRENT_DATE)' : 'DEFAULT CURRENT_DATE';
+// Tipo de las columnas de identificador. En la BD PostgreSQL/NeonDB las claves
+// (id_historia, id_usuario, ...) son UUID nativo; en MySQL son CHAR(36). Los
+// FOREIGN KEY exigen que el tipo coincida con la columna referenciada.
+const IDT = isMysql ? 'CHAR(36)' : 'UUID';
 // COMMENT inline solo es válido en MySQL.
 const C = (txt) => (isMysql ? ` COMMENT '${txt}'` : '');
 
@@ -54,14 +58,14 @@ const PASOS = [
   {
     nombre: '002 · tabla odontograma_svg',
     sql: `CREATE TABLE IF NOT EXISTS odontograma_svg (
-            id_svg           CHAR(36)    NOT NULL PRIMARY KEY,
-            id_historia      CHAR(36)    NOT NULL,
+            id_svg           ${IDT}    NOT NULL PRIMARY KEY,
+            id_historia      ${IDT}    NOT NULL,
             tipo             VARCHAR(12) NOT NULL${C('INICIAL|EVOLUCION')},
             svg              ${TEXT_LARGE} NOT NULL${C('SVG serializado (XMLSerializer)')},
             especificaciones TEXT        NULL,
             observaciones    TEXT        NULL,
             fecha            DATE        NOT NULL ${DEF_DATE},
-            id_usuario       CHAR(36)    NULL,
+            id_usuario       ${IDT}    NULL,
             created_at       ${DT}    NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (id_historia) REFERENCES historia_clinica(id_historia) ON DELETE CASCADE,
             FOREIGN KEY (id_usuario)  REFERENCES usuario(id_usuario) ON DELETE SET NULL
@@ -87,15 +91,15 @@ const PASOS = [
   {
     nombre: '004 · tabla iho_s',
     sql: `CREATE TABLE IF NOT EXISTS iho_s (
-            id_iho        CHAR(36)     NOT NULL PRIMARY KEY,
-            id_historia   CHAR(36)     NOT NULL,
+            id_iho        ${IDT}     NOT NULL PRIMARY KEY,
+            id_historia   ${IDT}     NOT NULL,
             fecha         DATE         NOT NULL ${DEF_DATE},
             valores       TEXT         NOT NULL${C('JSON: [{diente, db, dc}] 6 dientes índice')},
             idb           DECIMAL(4,2) NOT NULL${C('Índice de detritos (promedio DB)')},
             icalc         DECIMAL(4,2) NOT NULL${C('Índice de cálculo (promedio DC)')},
             ihos          DECIMAL(4,2) NOT NULL${C('IHO-S total = idb + icalc')},
             clasificacion VARCHAR(20)  NOT NULL${C('Bueno|Regular|Malo')},
-            id_usuario    CHAR(36)     NULL,
+            id_usuario    ${IDT}     NULL,
             created_at    ${DT}     NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (id_historia) REFERENCES historia_clinica(id_historia) ON DELETE CASCADE,
             FOREIGN KEY (id_usuario)  REFERENCES usuario(id_usuario) ON DELETE SET NULL
@@ -110,12 +114,12 @@ const PASOS = [
   {
     nombre: '005 · tabla epb',
     sql: `CREATE TABLE IF NOT EXISTS epb (
-            id_epb       CHAR(36)  NOT NULL PRIMARY KEY,
-            id_historia  CHAR(36)  NOT NULL,
+            id_epb       ${IDT}  NOT NULL PRIMARY KEY,
+            id_historia  ${IDT}  NOT NULL,
             fecha        DATE      NOT NULL ${DEF_DATE},
             valores      TEXT      NOT NULL${C('JSON: [{sextante, codigo, furca, movilidad}]')},
             codigo_max   SMALLINT  NOT NULL${C('Peor código OMS (0-4)')},
-            id_usuario   CHAR(36)  NULL,
+            id_usuario   ${IDT}  NULL,
             created_at   ${DT}  NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (id_historia) REFERENCES historia_clinica(id_historia) ON DELETE CASCADE,
             FOREIGN KEY (id_usuario)  REFERENCES usuario(id_usuario) ON DELETE SET NULL
