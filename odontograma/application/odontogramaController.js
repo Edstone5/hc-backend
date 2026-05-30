@@ -1,6 +1,7 @@
 import {
   DomainError,
   OdontogramaEntradaAggregate,
+  OdontogramaSvgAggregate,
 } from '../domain/odontogramaDomain.js';
 import { OdontogramaRepository } from '../infrastructure/odontogramaRepository.js';
 
@@ -46,6 +47,42 @@ export const OdontogramaController = {
       await repo.eliminarEntrada(req.params.idEntrada);
       return res.status(200).json({ message: 'Entrada eliminada' });
     } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  },
+
+  // ── SVG serializado (enfoque híbrido RF-06) ──────────────────────────────
+  // GET /:id/odontograma/svg?tipo=INICIAL|EVOLUCION
+  listarSvg: async (req, res) => {
+    try {
+      const id = req.params.id;
+      if (!id) {
+        return res.status(400).json({ error: 'id requerido' });
+      }
+      const tipo = req.query.tipo ? String(req.query.tipo).toUpperCase() : null;
+      const rows = await repo.listarSvgPorHistoria(id, tipo);
+      return res.status(200).json(rows);
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  },
+
+  // POST /:id/odontograma/svg
+  guardarSvg: async (req, res) => {
+    try {
+      const agg = new OdontogramaSvgAggregate({
+        idHistoria: req.params.id,
+        ...req.body,
+        idUsuario: req.user?.id,
+      });
+      await repo.guardarSvg(agg);
+      return res
+        .status(201)
+        .json({ message: 'Odontograma (SVG) guardado en la historia' });
+    } catch (e) {
+      if (esErr(e)) {
+        return res.status(400).json({ error: e.message });
+      }
       return res.status(500).json({ error: e.message });
     }
   },

@@ -250,6 +250,10 @@ hcRoutes.put('/:id/transferir', hcController.transferirHistoriaClinica);
 hcRoutes.get('/:id/auditoria', AuditoriaController.listarPorHistoria);
 
 // --- ODONTOGRAMA ---
+// SVG serializado (enfoque híbrido RF-06) — declarar antes de la ruta
+// con :idEntrada para evitar colisión de patrones.
+hcRoutes.get('/:id/odontograma/svg', OdontogramaController.listarSvg);
+hcRoutes.post('/:id/odontograma/svg', OdontogramaController.guardarSvg);
 hcRoutes.get('/:id/odontograma', OdontogramaController.listar);
 hcRoutes.post('/:id/odontograma', OdontogramaController.registrar);
 hcRoutes.delete('/:id/odontograma/:idEntrada', OdontogramaController.eliminar);

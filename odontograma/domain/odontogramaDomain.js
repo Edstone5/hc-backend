@@ -32,6 +32,24 @@ class DienteVO {
   }
 }
 
+// Tipo de odontograma según RF-06 / NTS N° 150-MINSA:
+//   INICIAL   → estado en que llegó el paciente (uno por historia)
+//   EVOLUCION → cambios/tratamientos por sesión (varios por historia)
+const TIPOS_VALIDOS = ['INICIAL', 'EVOLUCION'];
+
+class TipoVO {
+  constructor(v) {
+    // Por compatibilidad con datos previos, el default es EVOLUCION.
+    const s = String(v || 'EVOLUCION')
+      .trim()
+      .toUpperCase();
+    if (!TIPOS_VALIDOS.includes(s)) {
+      throw new DomainError('tipo inválido (INICIAL|EVOLUCION)');
+    }
+    this.value = s;
+  }
+}
+
 export class OdontogramaEntradaAggregate {
   constructor({
     idHistoria,
@@ -41,6 +59,7 @@ export class OdontogramaEntradaAggregate {
     tratamiento,
     fecha,
     alumno,
+    tipo,
     idUsuario,
   } = {}) {
     this._idHistoria = new IdHistoriaVO(idHistoria);
@@ -50,6 +69,7 @@ export class OdontogramaEntradaAggregate {
     this._tratamiento = tratamiento ? String(tratamiento).trim() : null;
     this._fecha = fecha || null;
     this._alumno = alumno ? String(alumno).trim() : null;
+    this._tipo = new TipoVO(tipo);
     this._idUsuario = idUsuario || null;
   }
 
@@ -62,6 +82,48 @@ export class OdontogramaEntradaAggregate {
       this._tratamiento,
       this._fecha,
       this._alumno,
+      this._tipo.value,
+      this._idUsuario,
+    ];
+  }
+}
+
+// Aggregate del SVG serializado (enfoque híbrido RF-06).
+// Persiste el dibujo completo del odontograma; complementa las entradas
+// estructuradas de OdontogramaEntradaAggregate.
+export class OdontogramaSvgAggregate {
+  constructor({
+    idHistoria,
+    tipo,
+    svg,
+    especificaciones,
+    observaciones,
+    fecha,
+    idUsuario,
+  } = {}) {
+    this._idHistoria = new IdHistoriaVO(idHistoria);
+    this._tipo = new TipoVO(tipo);
+    const svgStr = svg ? String(svg).trim() : '';
+    if (!svgStr) {
+      throw new DomainError('svg es requerido');
+    }
+    this._svg = svgStr;
+    this._especificaciones = especificaciones
+      ? String(especificaciones).trim()
+      : null;
+    this._observaciones = observaciones ? String(observaciones).trim() : null;
+    this._fecha = fecha || null;
+    this._idUsuario = idUsuario || null;
+  }
+
+  obtenerParametros() {
+    return [
+      this._idHistoria.value,
+      this._tipo.value,
+      this._svg,
+      this._especificaciones,
+      this._observaciones,
+      this._fecha,
       this._idUsuario,
     ];
   }
@@ -75,6 +137,12 @@ export class IOdontogramaRepository {
     throw new Error('no implementado');
   }
   async eliminarEntrada(_idEntrada) {
+    throw new Error('no implementado');
+  }
+  async listarSvgPorHistoria(_idHistoria, _tipo) {
+    throw new Error('no implementado');
+  }
+  async guardarSvg(_agg) {
     throw new Error('no implementado');
   }
 }

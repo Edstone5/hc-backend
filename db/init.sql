@@ -452,9 +452,26 @@ CREATE TABLE IF NOT EXISTS odontograma_entrada (
   tratamiento   TEXT         NULL,
   fecha         DATE         NOT NULL DEFAULT (CURRENT_DATE),
   alumno        VARCHAR(200) NULL,
+  tipo          VARCHAR(12)  NOT NULL DEFAULT 'EVOLUCION' COMMENT 'INICIAL|EVOLUCION (RF-06)',
   id_usuario    CHAR(36)     NULL,
   FOREIGN KEY (id_historia)  REFERENCES historia_clinica(id_historia) ON DELETE CASCADE,
   FOREIGN KEY (id_usuario)   REFERENCES usuario(id_usuario) ON DELETE SET NULL
+);
+
+-- Odontograma SVG serializado (enfoque híbrido RF-06): fidelidad visual del
+-- dibujo. Las entradas estructuradas viven en odontograma_entrada.
+CREATE TABLE IF NOT EXISTS odontograma_svg (
+  id_svg           CHAR(36)    NOT NULL PRIMARY KEY,
+  id_historia      CHAR(36)    NOT NULL,
+  tipo             VARCHAR(12) NOT NULL COMMENT 'INICIAL|EVOLUCION',
+  svg              LONGTEXT    NOT NULL COMMENT 'SVG serializado (XMLSerializer)',
+  especificaciones TEXT        NULL,
+  observaciones    TEXT        NULL,
+  fecha            DATE        NOT NULL DEFAULT (CURRENT_DATE),
+  id_usuario       CHAR(36)    NULL,
+  created_at       DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (id_historia) REFERENCES historia_clinica(id_historia) ON DELETE CASCADE,
+  FOREIGN KEY (id_usuario)  REFERENCES usuario(id_usuario) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS prescripcion (
@@ -676,6 +693,9 @@ CREATE INDEX IF NOT EXISTS idx_audit_registro ON auditoria (id_registro_afectado
 
 -- Odontograma: por historia y diente
 CREATE INDEX IF NOT EXISTS idx_odonto_historia ON odontograma_entrada (id_historia, numero_diente);
+
+-- Odontograma SVG: por historia y tipo, más reciente primero
+CREATE INDEX IF NOT EXISTS idx_odonto_svg_historia ON odontograma_svg (id_historia, tipo, created_at);
 
 -- ============================================================
 -- SECCIÓN 16: DATOS SEMILLA
