@@ -16,6 +16,7 @@ import { EnfermedadActualController } from '../enfermedadActual/application/enfe
 import { ModuloController } from '../filiacion/application/filiacionController.js';
 import { PagoController } from '../pago/application/pagoController.js';
 import { OdontogramaController } from '../odontograma/application/odontogramaController.js';
+import { IhoSimplificadoController } from '../ihoSimplificado/application/ihoSimplificadoController.js';
 import { PrescripcionController } from '../prescripcion/application/prescripcionController.js';
 import {
   AdjuntoController,
@@ -257,6 +258,10 @@ hcRoutes.post('/:id/odontograma/svg', OdontogramaController.guardarSvg);
 hcRoutes.get('/:id/odontograma', OdontogramaController.listar);
 hcRoutes.post('/:id/odontograma', OdontogramaController.registrar);
 hcRoutes.delete('/:id/odontograma/:idEntrada', OdontogramaController.eliminar);
+
+// --- IHO-S (Índice de Higiene Oral Simplificado) ---
+hcRoutes.get('/:id/iho-s', IhoSimplificadoController.consultar);
+hcRoutes.post('/:id/iho-s', IhoSimplificadoController.guardar);
 
 // --- MEDICAMENTOS / PRESCRIPCIONES ---
 hcRoutes.get('/:id/prescripciones', PrescripcionController.listar);
