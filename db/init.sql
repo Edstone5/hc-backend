@@ -411,6 +411,19 @@ CREATE TABLE IF NOT EXISTS iho_s (
   FOREIGN KEY (id_usuario)  REFERENCES usuario(id_usuario) ON DELETE SET NULL
 );
 
+-- Examen Periodontal Básico (EPB / PSR) — 6 sextantes, código OMS 0-4
+CREATE TABLE IF NOT EXISTS epb (
+  id_epb       CHAR(36)  NOT NULL PRIMARY KEY,
+  id_historia  CHAR(36)  NOT NULL,
+  fecha        DATE      NOT NULL DEFAULT (CURRENT_DATE),
+  valores      TEXT      NOT NULL COMMENT 'JSON: [{sextante, codigo, furca, movilidad}]',
+  codigo_max   SMALLINT  NOT NULL COMMENT 'Peor código OMS (0-4)',
+  id_usuario   CHAR(36)  NULL,
+  created_at   DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (id_historia) REFERENCES historia_clinica(id_historia) ON DELETE CASCADE,
+  FOREIGN KEY (id_usuario)  REFERENCES usuario(id_usuario) ON DELETE SET NULL
+);
+
 -- ============================================================
 -- SECCIÓN 6: DIAGNÓSTICO, DERIVACIÓN, EVOLUCIÓN
 -- ============================================================
@@ -716,6 +729,9 @@ CREATE INDEX IF NOT EXISTS idx_odonto_hallazgo ON odontograma_entrada (codigo_ha
 
 -- IHO-S: por historia
 CREATE INDEX IF NOT EXISTS idx_ihos_historia ON iho_s (id_historia, created_at);
+
+-- EPB: por historia
+CREATE INDEX IF NOT EXISTS idx_epb_historia ON epb (id_historia, created_at);
 
 -- Odontograma SVG: por historia y tipo, más reciente primero
 CREATE INDEX IF NOT EXISTS idx_odonto_svg_historia ON odontograma_svg (id_historia, tipo, created_at);

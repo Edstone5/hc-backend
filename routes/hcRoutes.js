@@ -17,6 +17,7 @@ import { ModuloController } from '../filiacion/application/filiacionController.j
 import { PagoController } from '../pago/application/pagoController.js';
 import { OdontogramaController } from '../odontograma/application/odontogramaController.js';
 import { IhoSimplificadoController } from '../ihoSimplificado/application/ihoSimplificadoController.js';
+import { EpbController } from '../epb/application/epbController.js';
 import { PrescripcionController } from '../prescripcion/application/prescripcionController.js';
 import {
   AdjuntoController,
@@ -262,6 +263,10 @@ hcRoutes.delete('/:id/odontograma/:idEntrada', OdontogramaController.eliminar);
 // --- IHO-S (Índice de Higiene Oral Simplificado) ---
 hcRoutes.get('/:id/iho-s', IhoSimplificadoController.consultar);
 hcRoutes.post('/:id/iho-s', IhoSimplificadoController.guardar);
+
+// --- EPB (Examen Periodontal Básico / PSR) ---
+hcRoutes.get('/:id/epb', EpbController.consultar);
+hcRoutes.post('/:id/epb', EpbController.guardar);
 
 // --- MEDICAMENTOS / PRESCRIPCIONES ---
 hcRoutes.get('/:id/prescripciones', PrescripcionController.listar);
