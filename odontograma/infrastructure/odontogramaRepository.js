@@ -29,12 +29,13 @@ export class OdontogramaRepository extends IOdontogramaRepository {
       fecha,
       alumno,
       tipo,
+      codigoHallazgo,
       idUsuario,
     ] = agg.obtenerParametros();
     await pool.query(
       `INSERT INTO odontograma_entrada
-        (id_entrada, id_historia, numero_diente, superficie, diagnostico, tratamiento, fecha, alumno, tipo, id_usuario)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        (id_entrada, id_historia, numero_diente, superficie, diagnostico, tratamiento, fecha, alumno, tipo, codigo_hallazgo, id_usuario)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
       [
         randomUUID(),
         idHistoria,
@@ -45,6 +46,7 @@ export class OdontogramaRepository extends IOdontogramaRepository {
         fecha || hoyISO(),
         alumno,
         tipo,
+        codigoHallazgo,
         idUsuario,
       ]
     );

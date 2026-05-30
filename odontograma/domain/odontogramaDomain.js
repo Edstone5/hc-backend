@@ -1,3 +1,5 @@
+import { CODIGOS_HALLAZGO } from './hallazgosCatalogo.js';
+
 const UUID_V4 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -50,6 +52,24 @@ class TipoVO {
   }
 }
 
+// Hallazgo del catálogo oficial SIHCE/NTS-150. Opcional (null) para
+// retrocompatibilidad con entradas previas de texto libre.
+class HallazgoVO {
+  constructor(v) {
+    if (v === undefined || v === null || String(v).trim() === '') {
+      this.value = null;
+      return;
+    }
+    const s = String(v).trim();
+    if (!CODIGOS_HALLAZGO.has(s)) {
+      throw new DomainError(
+        'codigo_hallazgo inválido (no está en el catálogo SIHCE/NTS-150)'
+      );
+    }
+    this.value = s;
+  }
+}
+
 export class OdontogramaEntradaAggregate {
   constructor({
     idHistoria,
@@ -60,6 +80,7 @@ export class OdontogramaEntradaAggregate {
     fecha,
     alumno,
     tipo,
+    codigoHallazgo,
     idUsuario,
   } = {}) {
     this._idHistoria = new IdHistoriaVO(idHistoria);
@@ -70,6 +91,7 @@ export class OdontogramaEntradaAggregate {
     this._fecha = fecha || null;
     this._alumno = alumno ? String(alumno).trim() : null;
     this._tipo = new TipoVO(tipo);
+    this._hallazgo = new HallazgoVO(codigoHallazgo);
     this._idUsuario = idUsuario || null;
   }
 
@@ -83,6 +105,7 @@ export class OdontogramaEntradaAggregate {
       this._fecha,
       this._alumno,
       this._tipo.value,
+      this._hallazgo.value,
       this._idUsuario,
     ];
   }

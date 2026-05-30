@@ -453,6 +453,7 @@ CREATE TABLE IF NOT EXISTS odontograma_entrada (
   fecha         DATE         NOT NULL DEFAULT (CURRENT_DATE),
   alumno        VARCHAR(200) NULL,
   tipo          VARCHAR(12)  NOT NULL DEFAULT 'EVOLUCION' COMMENT 'INICIAL|EVOLUCION (RF-06)',
+  codigo_hallazgo VARCHAR(10) NULL COMMENT 'Código catálogo SIHCE/NTS-150 (C,O,R,Co,DEX,...)',
   id_usuario    CHAR(36)     NULL,
   FOREIGN KEY (id_historia)  REFERENCES historia_clinica(id_historia) ON DELETE CASCADE,
   FOREIGN KEY (id_usuario)   REFERENCES usuario(id_usuario) ON DELETE SET NULL
@@ -693,6 +694,9 @@ CREATE INDEX IF NOT EXISTS idx_audit_registro ON auditoria (id_registro_afectado
 
 -- Odontograma: por historia y diente
 CREATE INDEX IF NOT EXISTS idx_odonto_historia ON odontograma_entrada (id_historia, numero_diente);
+
+-- Odontograma: por hallazgo (reportes RF-12)
+CREATE INDEX IF NOT EXISTS idx_odonto_hallazgo ON odontograma_entrada (codigo_hallazgo);
 
 -- Odontograma SVG: por historia y tipo, más reciente primero
 CREATE INDEX IF NOT EXISTS idx_odonto_svg_historia ON odontograma_svg (id_historia, tipo, created_at);
