@@ -25,7 +25,7 @@ Backend REST del sistema de historia clínica digital para estudiantes y docente
 | **Documentación**    | Swagger UI en `/api/api-docs` (seguridad global cookieAuth)                     |
 | **CI/CD**            | GitHub Actions — 6 jobs: tests + lint + commitlint + integración + BDD + deploy |
 | **GitOps**           | Watchtower pull-based + reconcile.sh + deploy.yml (ADR-0005)                    |
-| **ADRs**             | 8 Architecture Decision Records en `docs/adr/`                                  |
+| **ADRs**             | 21 Architecture Decision Records en `docs/adr/`                                 |
 
 ---
 
@@ -150,7 +150,7 @@ hc-backend/
 │   ├── tokenService.js
 │   └── cookieServices.js
 ├── docs/                       # Swagger JSDoc + documentación
-│   ├── adr/                    # 4 Architecture Decision Records
+│   ├── adr/                    # 21 Architecture Decision Records
 │   ├── SCM_PLAN.md             # IEEE 828 SCM Plan
 │   ├── SLO.md                  # Service Level Objectives
 │   ├── SAD.md                  # Software Architecture Document
@@ -171,34 +171,34 @@ hc-backend/
 
 ## API REST — Endpoints principales
 
-| Método     | Ruta                                 | Descripción                           |
-| ---------- | ------------------------------------ | ------------------------------------- |
-| `POST`     | `/api/users/login`                   | Iniciar sesión                        |
-| `POST`     | `/api/users/register`                | Registrar usuario                     |
-| `POST`     | `/api/users/refresh`                 | Renovar access token (refresh cookie) |
-| `GET`      | `/api/users/me`                      | Usuario autenticado                   |
-| `POST`     | `/api/patients`                      | Crear paciente                        |
-| `POST`     | `/api/hc/draft`                      | Obtener/crear borrador HC             |
-| `PATCH`    | `/api/hc/assign-patient`             | Asignar paciente a HC                 |
-| `GET`      | `/api/hc/:id/patient`                | Paciente de una HC                    |
-| `GET/PUT`  | `/api/hc/filiacion/historia/:id`     | Datos personales                      |
-| `GET/PUT`  | `/api/hc/:id/examen-general`         | Examen físico general                 |
-| `GET/PUT`  | `/api/hc/:id/examen-boca`            | Examen clínico bucal                  |
-| `GET/PUT`  | `/api/hc/:id/higiene`                | Higiene oral (IHOS)                   |
-| `GET/PUT`  | `/api/hc/:id/diagnostico-presuntivo` | Diagnóstico presuntivo                |
-| `GET/POST` | `/api/hc/:id/evolucion`              | Evolución del tratamiento             |
-| `GET/POST` | `/api/hc/:id/consentimiento`         | Consentimientos (RF-09) ✅            |
-| `DELETE`   | `/api/hc/:id/consentimiento/:id`     | Eliminar consentimiento               |
-| `POST`     | `/api/hc/:id/exportar-pdf`           | Auditar exportación PDF (RF-08) ✅    |
-| `GET`      | `/api/hc/:id/auditoria`              | Log de auditoría por HC               |
-| `GET/POST` | `/api/hc/:id/odontograma`            | Entradas odontograma (RF-06)          |
-| `GET/POST` | `/api/hc/:id/prescripciones`         | Historial medicamentos (RF-07)        |
-| `GET/POST` | `/api/hc/:id/adjuntos`               | Archivos adjuntos (RF-05)             |
-| `GET/POST` | `/api/hc/:id/citas`                  | Citas y agenda (RF-11)                |
-| `GET/POST` | `/api/hc/:id/fichas-operacion`       | Fichas de operación (RF-18)           |
-| `GET`      | `/api/catalogo/:nombre`              | Catálogos clínicos                    |
-| `GET`      | `/health`                            | Liveness probe                        |
-| `GET`      | `/metrics`                           | Métricas Prometheus                   |
+| Método     | Ruta                                 | Descripción                                                                           |
+| ---------- | ------------------------------------ | ------------------------------------------------------------------------------------- |
+| `POST`     | `/api/users/login`                   | Iniciar sesión                                                                        |
+| `POST`     | `/api/users/register`                | Registrar usuario                                                                     |
+| `POST`     | `/api/users/refresh`                 | Renovar access token (refresh cookie)                                                 |
+| `GET`      | `/api/users/me`                      | Usuario autenticado                                                                   |
+| `POST`     | `/api/patients`                      | Crear paciente                                                                        |
+| `POST`     | `/api/hc/draft`                      | Obtener/crear borrador HC                                                             |
+| `PATCH`    | `/api/hc/assign-patient`             | Asignar paciente a HC                                                                 |
+| `GET`      | `/api/hc/:id/patient`                | Paciente de una HC                                                                    |
+| `GET/PUT`  | `/api/hc/filiacion/historia/:id`     | Datos personales                                                                      |
+| `GET/PUT`  | `/api/hc/:id/examen-general`         | Examen físico general                                                                 |
+| `GET/PUT`  | `/api/hc/:id/examen-boca`            | Examen clínico bucal                                                                  |
+| `GET/PUT`  | `/api/hc/:id/higiene`                | Higiene oral (IHOS)                                                                   |
+| `GET/PUT`  | `/api/hc/:id/diagnostico-presuntivo` | Diagnóstico presuntivo                                                                |
+| `GET/POST` | `/api/hc/:id/evolucion`              | Evolución del tratamiento                                                             |
+| `GET/POST` | `/api/hc/:id/consentimiento`         | Consentimientos (RF-09) ✅                                                            |
+| `DELETE`   | `/api/hc/:id/consentimiento/:id`     | Eliminar consentimiento                                                               |
+| `POST`     | `/api/hc/:id/exportar-pdf`           | Auditar exportación PDF (RF-08) ✅                                                    |
+| `GET`      | `/api/hc/:id/auditoria`              | Log de auditoría por HC                                                               |
+| `GET/POST` | `/api/hc/:id/odontograma`            | Entradas odontograma (RF-06) — POST valida exclusión de pieza ausente (409, ADR-0021) |
+| `GET/POST` | `/api/hc/:id/prescripciones`         | Historial medicamentos (RF-07)                                                        |
+| `GET/POST` | `/api/hc/:id/adjuntos`               | Archivos adjuntos (RF-05)                                                             |
+| `GET/POST` | `/api/hc/:id/citas`                  | Citas y agenda (RF-11)                                                                |
+| `GET/POST` | `/api/hc/:id/fichas-operacion`       | Fichas de operación (RF-18)                                                           |
+| `GET`      | `/api/catalogo/:nombre`              | Catálogos clínicos                                                                    |
+| `GET`      | `/health`                            | Liveness probe                                                                        |
+| `GET`      | `/metrics`                           | Métricas Prometheus                                                                   |
 
 > ✅ Endpoints añadidos en v2.2.0
 
@@ -248,7 +248,7 @@ open http://localhost:3001
 | [`docs/SCM_PLAN.md`](./docs/SCM_PLAN.md)                                                               | Plan IEEE 828 de Gestión de Configuración               |
 | [`docs/SLO.md`](./docs/SLO.md)                                                                         | Service Level Objectives (disponibilidad, latencia)     |
 | [`docs/GIT_FLOW.md`](./docs/GIT_FLOW.md)                                                               | Guía de trabajo con Git Flow                            |
-| [`docs/adr/`](./docs/adr/)                                                                             | Architecture Decision Records (ADR-0001 a **ADR-0008**) |
+| [`docs/adr/`](./docs/adr/)                                                                             | Architecture Decision Records (ADR-0001 a **ADR-0021**) |
 | [`docs/adr/0006-consentimiento-informado-rf09.md`](./docs/adr/0006-consentimiento-informado-rf09.md)   | ADR-0006: Módulo Consentimiento Informado               |
 | [`docs/adr/0007-exportacion-pdf-rf08.md`](./docs/adr/0007-exportacion-pdf-rf08.md)                     | ADR-0007: Mejora exportación PDF                        |
 | [`docs/adr/0008-consolidacion-odontograma-rf06.md`](./docs/adr/0008-consolidacion-odontograma-rf06.md) | ADR-0008: Consolidación Odontograma                     |

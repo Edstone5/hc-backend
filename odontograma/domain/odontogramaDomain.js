@@ -3,6 +3,33 @@ import { CODIGOS_HALLAZGO } from './hallazgosCatalogo.js';
 const UUID_V4 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+// Códigos que marcan una pieza como AUSENTE (no presente en boca):
+//   DNE = no erupcionado · DEX = extraído/perdido · DAO = ausente otra causa.
+// Regla de exclusión clínica (NTS-188 / ADR-0020, ADR-0021): una pieza ausente
+// no puede tener otros hallazgos en el mismo odontograma.
+export const CODIGOS_AUSENCIA = new Set(['DNE', 'DEX', 'DAO']);
+
+/**
+ * Valida la regla de exclusión por ausencia para una nueva entrada.
+ * @param {string|null} codigoNuevo  Código del hallazgo a registrar (o null).
+ * @param {string[]} codigosExistentes Códigos ya registrados para esa pieza/tipo.
+ * @returns {{ ok: boolean, motivo?: string }}
+ */
+export function validarExclusionAusencia(codigoNuevo, codigosExistentes = []) {
+  const hayAusenciaPrevia = codigosExistentes.some((c) =>
+    CODIGOS_AUSENCIA.has(c)
+  );
+  const nuevoEsAusencia = CODIGOS_AUSENCIA.has(codigoNuevo);
+  if (hayAusenciaPrevia && !nuevoEsAusencia) {
+    return {
+      ok: false,
+      motivo:
+        'La pieza está registrada como ausente (DNE/DEX/DAO) en este odontograma; no admite otros hallazgos. Elimina la marca de ausencia primero.',
+    };
+  }
+  return { ok: true };
+}
+
 export class DomainError extends Error {
   constructor(msg) {
     super(msg);
@@ -93,6 +120,17 @@ export class OdontogramaEntradaAggregate {
     this._tipo = new TipoVO(tipo);
     this._hallazgo = new HallazgoVO(codigoHallazgo);
     this._idUsuario = idUsuario || null;
+  }
+
+  // Getters públicos para validaciones en la capa de aplicación.
+  get numeroDiente() {
+    return this._diente.value;
+  }
+  get tipo() {
+    return this._tipo.value;
+  }
+  get codigoHallazgo() {
+    return this._hallazgo.value;
   }
 
   obtenerParametros() {
