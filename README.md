@@ -25,7 +25,7 @@ Backend REST del sistema de historia clínica digital para estudiantes y docente
 | **Documentación**    | Swagger UI en `/api/api-docs` (seguridad global cookieAuth)                     |
 | **CI/CD**            | GitHub Actions — 6 jobs: tests + lint + commitlint + integración + BDD + deploy |
 | **GitOps**           | Watchtower pull-based + reconcile.sh + deploy.yml (ADR-0005)                    |
-| **ADRs**             | 21 Architecture Decision Records en `docs/adr/`                                 |
+| **ADRs**             | 22 Architecture Decision Records en `docs/adr/`                                 |
 
 ---
 
@@ -150,7 +150,7 @@ hc-backend/
 │   ├── tokenService.js
 │   └── cookieServices.js
 ├── docs/                       # Swagger JSDoc + documentación
-│   ├── adr/                    # 21 Architecture Decision Records
+│   ├── adr/                    # 22 Architecture Decision Records
 │   ├── SCM_PLAN.md             # IEEE 828 SCM Plan
 │   ├── SLO.md                  # Service Level Objectives
 │   ├── SAD.md                  # Software Architecture Document
@@ -248,7 +248,7 @@ open http://localhost:3001
 | [`docs/SCM_PLAN.md`](./docs/SCM_PLAN.md)                                                               | Plan IEEE 828 de Gestión de Configuración               |
 | [`docs/SLO.md`](./docs/SLO.md)                                                                         | Service Level Objectives (disponibilidad, latencia)     |
 | [`docs/GIT_FLOW.md`](./docs/GIT_FLOW.md)                                                               | Guía de trabajo con Git Flow                            |
-| [`docs/adr/`](./docs/adr/)                                                                             | Architecture Decision Records (ADR-0001 a **ADR-0021**) |
+| [`docs/adr/`](./docs/adr/)                                                                             | Architecture Decision Records (ADR-0001 a **ADR-0022**) |
 | [`docs/adr/0006-consentimiento-informado-rf09.md`](./docs/adr/0006-consentimiento-informado-rf09.md)   | ADR-0006: Módulo Consentimiento Informado               |
 | [`docs/adr/0007-exportacion-pdf-rf08.md`](./docs/adr/0007-exportacion-pdf-rf08.md)                     | ADR-0007: Mejora exportación PDF                        |
 | [`docs/adr/0008-consolidacion-odontograma-rf06.md`](./docs/adr/0008-consolidacion-odontograma-rf06.md) | ADR-0008: Consolidación Odontograma                     |

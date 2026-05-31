@@ -2,7 +2,7 @@ import {
   DomainError,
   OdontogramaEntradaAggregate,
   OdontogramaSvgAggregate,
-  validarExclusionAusencia,
+  validarExclusion,
 } from '../domain/odontogramaDomain.js';
 import { OdontogramaRepository } from '../infrastructure/odontogramaRepository.js';
 
@@ -32,9 +32,10 @@ export const OdontogramaController = {
         idUsuario: req.user?.id,
       });
 
-      // Regla de exclusión clínica (NTS-188 / ADR-0021): una pieza ausente
-      // (DNE/DEX/DAO) no admite otros hallazgos en el mismo odontograma (mismo
-      // diente y mismo tipo). La BD es garante de integridad, no solo el cliente.
+      // Reglas de exclusión clínica (NTS-188 / ADR-0021, ADR-0022): pieza ausente
+      // (DNE/DEX/DAO) no admite otros hallazgos, y grupos de exclusión mutua
+      // (tamaño, giroversión, corona) en el mismo diente y tipo. La BD es garante
+      // de integridad, no solo el cliente.
       const existentes = await repo.listarPorHistoria(req.params.id);
       const codigosMismaPieza = existentes
         .filter(
@@ -44,10 +45,7 @@ export const OdontogramaController = {
         )
         .map((r) => r.codigo_hallazgo)
         .filter(Boolean);
-      const exclusion = validarExclusionAusencia(
-        agg.codigoHallazgo,
-        codigosMismaPieza
-      );
+      const exclusion = validarExclusion(agg.codigoHallazgo, codigosMismaPieza);
       if (!exclusion.ok) {
         return res.status(409).json({ error: exclusion.motivo });
       }

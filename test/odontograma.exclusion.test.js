@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   validarExclusionAusencia,
+  validarExclusion,
   CODIGOS_AUSENCIA,
+  GRUPOS_EXCLUSION_MUTUA,
   OdontogramaEntradaAggregate,
 } from '../odontograma/domain/odontogramaDomain.js';
 
@@ -33,6 +35,42 @@ describe('validarExclusionAusencia', () => {
 
   it('CODIGOS_AUSENCIA contiene DNE, DEX, DAO', () => {
     expect([...CODIGOS_AUSENCIA].sort()).toEqual(['DAO', 'DEX', 'DNE']);
+  });
+});
+
+// ── Matriz de exclusión mutua (validarExclusion) ─────────────────────────────
+describe('validarExclusion (matriz)', () => {
+  it('incluye la regla de ausencia', () => {
+    expect(validarExclusion('C', ['DEX']).ok).toBe(false);
+  });
+
+  it('bloquea macrodoncia + microdoncia en la misma pieza', () => {
+    const r = validarExclusion('MIC', ['MAC']);
+    expect(r.ok).toBe(false);
+    expect(r.motivo).toMatch(/tamaño/i);
+  });
+
+  it('bloquea giroversión derecha + izquierda', () => {
+    expect(validarExclusion('GV-I', ['GV-D']).ok).toBe(false);
+  });
+
+  it('bloquea dos coronas totales distintas (Co + Cv)', () => {
+    const r = validarExclusion('Cv', ['Co']);
+    expect(r.ok).toBe(false);
+    expect(r.motivo).toMatch(/corona/i);
+  });
+
+  it('permite repetir el mismo código del grupo (no es contradictorio)', () => {
+    expect(validarExclusion('Co', ['Co']).ok).toBe(true);
+  });
+
+  it('permite combinaciones de grupos distintos (caries + corona)', () => {
+    expect(validarExclusion('Co', ['C']).ok).toBe(true);
+  });
+
+  it('GRUPOS_EXCLUSION_MUTUA define tamaño, giroversión y corona', () => {
+    const nombres = GRUPOS_EXCLUSION_MUTUA.map((g) => g.nombre).sort();
+    expect(nombres).toEqual(['corona', 'giroversión', 'tamaño']);
   });
 });
 

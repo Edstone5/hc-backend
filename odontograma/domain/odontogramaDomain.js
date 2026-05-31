@@ -30,6 +30,50 @@ export function validarExclusionAusencia(codigoNuevo, codigosExistentes = []) {
   return { ok: true };
 }
 
+// Matriz de exclusión mutua: dentro de cada grupo, dos códigos DISTINTOS no
+// pueden coexistir en la misma pieza y tipo de odontograma (son contradictorios).
+// Conservadora a propósito: solo incompatibilidades clínicas inequívocas, para
+// evitar falsos positivos que entorpezcan el registro.
+export const GRUPOS_EXCLUSION_MUTUA = [
+  // Anomalías de tamaño opuestas.
+  { nombre: 'tamaño', codigos: ['MAC', 'MIC'] },
+  // Dirección de giroversión opuesta.
+  { nombre: 'giroversión', codigos: ['GV-D', 'GV-I'] },
+  // Una pieza lleva a lo sumo un tipo de corona total.
+  { nombre: 'corona', codigos: ['Co', 'Cv', 'Cmc', 'Clm', 'Ct'] },
+];
+
+/**
+ * Valida TODAS las reglas de exclusión clínica para una nueva entrada:
+ *  1) Pieza ausente (DNE/DEX/DAO) no admite otros hallazgos.
+ *  2) Grupos de exclusión mutua (tamaño, giroversión, corona).
+ * @param {string|null} codigoNuevo
+ * @param {string[]} codigosExistentes  Códigos de la misma pieza y tipo.
+ * @returns {{ ok: boolean, motivo?: string }}
+ */
+export function validarExclusion(codigoNuevo, codigosExistentes = []) {
+  const ausencia = validarExclusionAusencia(codigoNuevo, codigosExistentes);
+  if (!ausencia.ok) {
+    return ausencia;
+  }
+
+  const grupo = GRUPOS_EXCLUSION_MUTUA.find((g) =>
+    g.codigos.includes(codigoNuevo)
+  );
+  if (grupo) {
+    const previo = codigosExistentes.find(
+      (c) => grupo.codigos.includes(c) && c !== codigoNuevo
+    );
+    if (previo) {
+      return {
+        ok: false,
+        motivo: `La pieza ya tiene "${previo}", incompatible con "${codigoNuevo}" (grupo: ${grupo.nombre}). Elimina el hallazgo previo primero.`,
+      };
+    }
+  }
+  return { ok: true };
+}
+
 export class DomainError extends Error {
   constructor(msg) {
     super(msg);
