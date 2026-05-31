@@ -171,33 +171,34 @@ hc-backend/
 
 ## API REST — Endpoints principales
 
-| Método     | Ruta                                 | Descripción                        |
-| ---------- | ------------------------------------ | ---------------------------------- |
-| `POST`     | `/api/users/login`                   | Iniciar sesión                     |
-| `POST`     | `/api/users/register`                | Registrar usuario                  |
-| `GET`      | `/api/users/me`                      | Usuario autenticado                |
-| `POST`     | `/api/patients`                      | Crear paciente                     |
-| `POST`     | `/api/hc/draft`                      | Obtener/crear borrador HC          |
-| `PATCH`    | `/api/hc/assign-patient`             | Asignar paciente a HC              |
-| `GET`      | `/api/hc/:id/patient`                | Paciente de una HC                 |
-| `GET/PUT`  | `/api/hc/filiacion/historia/:id`     | Datos personales                   |
-| `GET/PUT`  | `/api/hc/:id/examen-general`         | Examen físico general              |
-| `GET/PUT`  | `/api/hc/:id/examen-boca`            | Examen clínico bucal               |
-| `GET/PUT`  | `/api/hc/:id/higiene`                | Higiene oral (IHOS)                |
-| `GET/PUT`  | `/api/hc/:id/diagnostico-presuntivo` | Diagnóstico presuntivo             |
-| `GET/POST` | `/api/hc/:id/evolucion`              | Evolución del tratamiento          |
-| `GET/POST` | `/api/hc/:id/consentimiento`         | Consentimientos (RF-09) ✅         |
-| `DELETE`   | `/api/hc/:id/consentimiento/:id`     | Eliminar consentimiento            |
-| `POST`     | `/api/hc/:id/exportar-pdf`           | Auditar exportación PDF (RF-08) ✅ |
-| `GET`      | `/api/hc/:id/auditoria`              | Log de auditoría por HC            |
-| `GET/POST` | `/api/hc/:id/odontograma`            | Entradas odontograma (RF-06)       |
-| `GET/POST` | `/api/hc/:id/prescripciones`         | Historial medicamentos (RF-07)     |
-| `GET/POST` | `/api/hc/:id/adjuntos`               | Archivos adjuntos (RF-05)          |
-| `GET/POST` | `/api/hc/:id/citas`                  | Citas y agenda (RF-11)             |
-| `GET/POST` | `/api/hc/:id/fichas-operacion`       | Fichas de operación (RF-18)        |
-| `GET`      | `/api/catalogo/:nombre`              | Catálogos clínicos                 |
-| `GET`      | `/health`                            | Liveness probe                     |
-| `GET`      | `/metrics`                           | Métricas Prometheus                |
+| Método     | Ruta                                 | Descripción                           |
+| ---------- | ------------------------------------ | ------------------------------------- |
+| `POST`     | `/api/users/login`                   | Iniciar sesión                        |
+| `POST`     | `/api/users/register`                | Registrar usuario                     |
+| `POST`     | `/api/users/refresh`                 | Renovar access token (refresh cookie) |
+| `GET`      | `/api/users/me`                      | Usuario autenticado                   |
+| `POST`     | `/api/patients`                      | Crear paciente                        |
+| `POST`     | `/api/hc/draft`                      | Obtener/crear borrador HC             |
+| `PATCH`    | `/api/hc/assign-patient`             | Asignar paciente a HC                 |
+| `GET`      | `/api/hc/:id/patient`                | Paciente de una HC                    |
+| `GET/PUT`  | `/api/hc/filiacion/historia/:id`     | Datos personales                      |
+| `GET/PUT`  | `/api/hc/:id/examen-general`         | Examen físico general                 |
+| `GET/PUT`  | `/api/hc/:id/examen-boca`            | Examen clínico bucal                  |
+| `GET/PUT`  | `/api/hc/:id/higiene`                | Higiene oral (IHOS)                   |
+| `GET/PUT`  | `/api/hc/:id/diagnostico-presuntivo` | Diagnóstico presuntivo                |
+| `GET/POST` | `/api/hc/:id/evolucion`              | Evolución del tratamiento             |
+| `GET/POST` | `/api/hc/:id/consentimiento`         | Consentimientos (RF-09) ✅            |
+| `DELETE`   | `/api/hc/:id/consentimiento/:id`     | Eliminar consentimiento               |
+| `POST`     | `/api/hc/:id/exportar-pdf`           | Auditar exportación PDF (RF-08) ✅    |
+| `GET`      | `/api/hc/:id/auditoria`              | Log de auditoría por HC               |
+| `GET/POST` | `/api/hc/:id/odontograma`            | Entradas odontograma (RF-06)          |
+| `GET/POST` | `/api/hc/:id/prescripciones`         | Historial medicamentos (RF-07)        |
+| `GET/POST` | `/api/hc/:id/adjuntos`               | Archivos adjuntos (RF-05)             |
+| `GET/POST` | `/api/hc/:id/citas`                  | Citas y agenda (RF-11)                |
+| `GET/POST` | `/api/hc/:id/fichas-operacion`       | Fichas de operación (RF-18)           |
+| `GET`      | `/api/catalogo/:nombre`              | Catálogos clínicos                    |
+| `GET`      | `/health`                            | Liveness probe                        |
+| `GET`      | `/metrics`                           | Métricas Prometheus                   |
 
 > ✅ Endpoints añadidos en v2.2.0
 

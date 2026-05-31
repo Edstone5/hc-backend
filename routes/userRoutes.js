@@ -9,6 +9,11 @@ const authController = new AuthController();
 
 userRoutes.post('/register', UserController.registrarUsuario);
 userRoutes.post('/login', authController.iniciarSesion);
+// /refresh debe ir ANTES de authMiddleware: se usa cuando el access token ya
+// expiró, y se autentica con el refresh token (cookie), no con el access token.
+userRoutes.post('/refresh', (req, res) =>
+  authController.refrescarSesion(req, res)
+);
 userRoutes.use(authMiddleware);
 userRoutes.post('/logout', authController.cerrarSesion);
 

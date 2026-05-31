@@ -36,6 +36,14 @@ export class TokenService {
     }
   }
 
+  static verifyRefreshToken(token) {
+    try {
+      return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    } catch {
+      return null;
+    }
+  }
+
   static saveRefreshToken(refreshToken) {
     return true;
   }

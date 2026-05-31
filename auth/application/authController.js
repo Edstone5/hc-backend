@@ -76,6 +76,39 @@ export class AuthController {
     }
   }
 
+  // Renueva el access token usando el refresh token (cookie). No requiere un
+  // access token válido (de hecho se usa cuando ya expiró). Mantiene el refresh
+  // token vigente. Devuelve los datos del usuario para que el cliente reintente.
+  async refrescarSesion(req, res) {
+    try {
+      const refreshToken = req.cookies.refreshToken;
+      if (!refreshToken) {
+        return res.status(401).json({ error: 'No refresh token provided' });
+      }
+      const decoded = TokenService.verifyRefreshToken(refreshToken);
+      if (!decoded || decoded.type !== 'refresh' || !decoded.id) {
+        return res.status(401).json({ error: 'Invalid refresh token' });
+      }
+      const row = await repo.obtenerUsuarioPorId(decoded.id);
+      if (!row) {
+        return res.status(401).json({ error: 'Invalid refresh token' });
+      }
+      const user = {
+        id: row.id_usuario,
+        userCode: row.codigo_usuario || row.user_code,
+        firstName: row.nombre,
+        lastName: row.apellido,
+        email: row.email,
+        role: row.rol,
+      };
+      const accessToken = TokenService.generateAccessToken(user);
+      CookieService.setAccessCookie(res, accessToken);
+      return res.status(200).json(user);
+    } catch {
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
   obtenerSesionActual(req, res) {
     return res.status(200).json(req.user);
   }
