@@ -60,6 +60,16 @@ describe('validarExclusion (matriz)', () => {
     expect(r.motivo).toMatch(/corona/i);
   });
 
+  it('bloquea fusión + germinación en la misma pieza', () => {
+    const r = validarExclusion('G', ['F']);
+    expect(r.ok).toBe(false);
+    expect(r.motivo).toMatch(/doble formación/i);
+  });
+
+  it('permite combinar fusión con un hallazgo de otro grupo (F + C)', () => {
+    expect(validarExclusion('F', ['C']).ok).toBe(true);
+  });
+
   it('permite repetir el mismo código del grupo (no es contradictorio)', () => {
     expect(validarExclusion('Co', ['Co']).ok).toBe(true);
   });
@@ -68,9 +78,14 @@ describe('validarExclusion (matriz)', () => {
     expect(validarExclusion('Co', ['C']).ok).toBe(true);
   });
 
-  it('GRUPOS_EXCLUSION_MUTUA define tamaño, giroversión y corona', () => {
+  it('GRUPOS_EXCLUSION_MUTUA define tamaño, giroversión, corona y doble formación', () => {
     const nombres = GRUPOS_EXCLUSION_MUTUA.map((g) => g.nombre).sort();
-    expect(nombres).toEqual(['corona', 'giroversión', 'tamaño']);
+    expect(nombres).toEqual([
+      'corona',
+      'doble formación',
+      'giroversión',
+      'tamaño',
+    ]);
   });
 });
 

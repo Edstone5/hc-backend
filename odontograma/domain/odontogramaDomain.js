@@ -41,6 +41,9 @@ export const GRUPOS_EXCLUSION_MUTUA = [
   { nombre: 'giroversión', codigos: ['GV-D', 'GV-I'] },
   // Una pieza lleva a lo sumo un tipo de corona total.
   { nombre: 'corona', codigos: ['Co', 'Cv', 'Cmc', 'Clm', 'Ct'] },
+  // Fusión y germinación son diagnósticos diferenciales de la misma anomalía de
+  // doble formación (gemación): una pieza es una u otra, nunca ambas a la vez.
+  { nombre: 'doble formación', codigos: ['F', 'G'] },
 ];
 
 /**
