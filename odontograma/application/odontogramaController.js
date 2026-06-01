@@ -3,6 +3,7 @@ import {
   OdontogramaEntradaAggregate,
   OdontogramaSvgAggregate,
   validarExclusion,
+  agregarReporteOdontograma,
 } from '../domain/odontogramaDomain.js';
 import { OdontogramaRepository } from '../infrastructure/odontogramaRepository.js';
 
@@ -58,6 +59,26 @@ export const OdontogramaController = {
       if (esErr(e)) {
         return res.status(400).json({ error: e.message });
       }
+      return res.status(500).json({ error: e.message });
+    }
+  },
+
+  // ── Reporte agregado multi-paciente (RF-12) ──────────────────────────────
+  // GET /odontograma/reporte/prevalencia?tipo=&alumno=&desde=&hasta=
+  // Prevalencia de caries (global y por diente) + índice CPO-D promedio.
+  reportePrevalencia: async (req, res) => {
+    try {
+      const { tipo, alumno, desde, hasta } = req.query;
+      const filtros = {
+        tipo: tipo ? String(tipo).toUpperCase() : null,
+        alumno: alumno || null,
+        desde: desde || null,
+        hasta: hasta || null,
+      };
+      const filas = await repo.listarEntradasParaReporte(filtros);
+      const reporte = agregarReporteOdontograma(filas);
+      return res.status(200).json(reporte);
+    } catch (e) {
       return res.status(500).json({ error: e.message });
     }
   },

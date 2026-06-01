@@ -1,4 +1,4 @@
-import { CODIGOS_HALLAZGO } from './hallazgosCatalogo.js';
+import { CODIGOS_HALLAZGO, CLASE_CPOD } from './hallazgosCatalogo.js';
 
 const UUID_V4 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -75,6 +75,103 @@ export function validarExclusion(codigoNuevo, codigosExistentes = []) {
     }
   }
   return { ok: true };
+}
+
+/**
+ * Reporte agregado multi-paciente del odontograma (RF-12).
+ *
+ * Recibe filas crudas de `odontograma_entrada` (varias historias) y devuelve:
+ *  - totalPacientes / totalEntradas
+ *  - caries: prevalencia de caries (códigos clase 'cariado') a nivel de PACIENTE:
+ *      pacientesConCaries y prevalencia = pacientesConCaries / totalPacientes.
+ *  - cpod: promedio del índice CPO-D por paciente (suma de dientes Cariados,
+ *      Perdidos y Obturados, contando cada DIENTE una sola vez por paciente).
+ *  - porDiente: para cada numero_diente, nº de pacientes con caries en esa pieza
+ *      y su prevalencia relativa al total de pacientes (mapa CPO-D por diente).
+ *
+ * Función PURA (sin BD): se prueba con arrays en memoria.
+ *
+ * @param {Array<{id_historia:string, numero_diente:number|string, codigo_hallazgo:string|null}>} filas
+ * @returns {{
+ *   totalPacientes:number, totalEntradas:number,
+ *   caries:{ pacientesConCaries:number, prevalencia:number },
+ *   cpod:{ promedio:number, componentes:{cariado:number,perdido:number,obturado:number} },
+ *   porDiente: Array<{ diente:number, pacientesConCaries:number, prevalencia:number }>
+ * }}
+ */
+export function agregarReporteOdontograma(filas = []) {
+  const rows = Array.isArray(filas) ? filas : [];
+
+  // Agrupar por paciente (id_historia).
+  const porPaciente = new Map(); // id_historia -> { caries:Set<diente>, perdido:Set, obturado:Set }
+  for (const f of rows) {
+    const tieneId = f && f.id_historia !== null && f.id_historia !== undefined;
+    const idh = tieneId ? String(f.id_historia) : null;
+    if (!idh) {
+      continue;
+    }
+    const diente = parseInt(f.numero_diente);
+    const codigo = f.codigo_hallazgo || null;
+    const clase = codigo ? CLASE_CPOD[codigo] : null;
+    if (!porPaciente.has(idh)) {
+      porPaciente.set(idh, {
+        cariado: new Set(),
+        perdido: new Set(),
+        obturado: new Set(),
+      });
+    }
+    if (clase && !isNaN(diente)) {
+      porPaciente.get(idh)[clase].add(diente);
+    }
+  }
+
+  const totalPacientes = porPaciente.size;
+  const totalEntradas = rows.length;
+
+  // Prevalencia de caries a nivel paciente + CPO-D por paciente.
+  let pacientesConCaries = 0;
+  let sumaCpod = 0;
+  let sumaC = 0;
+  let sumaP = 0;
+  let sumaO = 0;
+  const cariesPorDiente = new Map(); // diente -> nº pacientes con caries en esa pieza
+
+  for (const datos of porPaciente.values()) {
+    if (datos.cariado.size > 0) {
+      pacientesConCaries += 1;
+    }
+    sumaC += datos.cariado.size;
+    sumaP += datos.perdido.size;
+    sumaO += datos.obturado.size;
+    sumaCpod += datos.cariado.size + datos.perdido.size + datos.obturado.size;
+    for (const diente of datos.cariado) {
+      cariesPorDiente.set(diente, (cariesPorDiente.get(diente) || 0) + 1);
+    }
+  }
+
+  const ratio = (n) => (totalPacientes > 0 ? n / totalPacientes : 0);
+
+  const porDiente = [...cariesPorDiente.entries()]
+    .map(([diente, n]) => ({
+      diente,
+      pacientesConCaries: n,
+      prevalencia: ratio(n),
+    }))
+    .sort((a, b) => a.diente - b.diente);
+
+  return {
+    totalPacientes,
+    totalEntradas,
+    caries: {
+      pacientesConCaries,
+      prevalencia: ratio(pacientesConCaries),
+    },
+    cpod: {
+      promedio: ratio(sumaCpod),
+      componentes: { cariado: sumaC, perdido: sumaP, obturado: sumaO },
+    },
+    porDiente,
+  };
 }
 
 export class DomainError extends Error {

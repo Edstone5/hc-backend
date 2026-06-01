@@ -53,6 +53,42 @@ export class OdontogramaRepository extends IOdontogramaRepository {
     return true;
   }
 
+  // Entradas multi-paciente para reportes agregados (RF-12). Filtros opcionales:
+  //   tipo (INICIAL|EVOLUCION), alumno, desde/hasta (fecha YYYY-MM-DD).
+  // Devuelve solo las columnas necesarias para la agregación.
+  async listarEntradasParaReporte({
+    tipo = null,
+    alumno = null,
+    desde = null,
+    hasta = null,
+  } = {}) {
+    const params = [];
+    const conds = [];
+    if (tipo) {
+      params.push(tipo);
+      conds.push(`tipo = $${params.length}`);
+    }
+    if (alumno) {
+      params.push(alumno);
+      conds.push(`alumno = $${params.length}`);
+    }
+    if (desde) {
+      params.push(desde);
+      conds.push(`fecha >= $${params.length}`);
+    }
+    if (hasta) {
+      params.push(hasta);
+      conds.push(`fecha <= $${params.length}`);
+    }
+    const where = conds.length ? `WHERE ${conds.join(' AND ')}` : '';
+    const r = await pool.query(
+      `SELECT id_historia, numero_diente, codigo_hallazgo
+         FROM odontograma_entrada ${where}`,
+      params
+    );
+    return r.rows;
+  }
+
   async eliminarEntrada(idEntrada) {
     await pool.query('DELETE FROM odontograma_entrada WHERE id_entrada = $1', [
       idEntrada,

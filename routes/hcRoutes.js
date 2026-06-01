@@ -252,6 +252,12 @@ hcRoutes.put('/:id/transferir', hcController.transferirHistoriaClinica);
 hcRoutes.get('/:id/auditoria', AuditoriaController.listarPorHistoria);
 
 // --- ODONTOGRAMA ---
+// Reporte agregado multi-paciente (RF-12) — declarar ANTES de las rutas con
+// :id para que "odontograma" no sea capturado como un id de historia.
+hcRoutes.get(
+  '/odontograma/reporte/prevalencia',
+  OdontogramaController.reportePrevalencia
+);
 // SVG serializado (enfoque híbrido RF-06) — declarar antes de la ruta
 // con :idEntrada para evitar colisión de patrones.
 hcRoutes.get('/:id/odontograma/svg', OdontogramaController.listarSvg);
