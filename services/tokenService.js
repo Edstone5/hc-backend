@@ -1,4 +1,8 @@
+import { randomUUID } from 'crypto';
 import jwt from 'jsonwebtoken';
+
+const REFRESH_TTL_DAYS = 7;
+
 export class TokenService {
   static generateAccessToken(user) {
     return jwt.sign(
@@ -14,17 +18,26 @@ export class TokenService {
     );
   }
 
+  // Genera un refresh token con un identificador único (jti) para permitir su
+  // rotación y revocación (ADR-0028). Devuelve el token firmado, su jti y la
+  // fecha de expiración (para persistir en la tabla refresh_token).
   static generateRefreshToken(user) {
-    return jwt.sign(
+    const jti = randomUUID();
+    const expiraEn = new Date(
+      Date.now() + REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000
+    );
+    const token = jwt.sign(
       {
         id: user.id,
         type: 'refresh',
+        jti,
       },
       process.env.JWT_REFRESH_SECRET,
       {
-        expiresIn: '7d',
+        expiresIn: `${REFRESH_TTL_DAYS}d`,
       }
     );
+    return { token, jti, expiraEn };
   }
 
   static verifyAccessToken(token) {
@@ -42,9 +55,5 @@ export class TokenService {
     } catch {
       return null;
     }
-  }
-
-  static saveRefreshToken(refreshToken) {
-    return true;
   }
 }

@@ -15,7 +15,7 @@ userRoutes.post('/refresh', (req, res) =>
   authController.refrescarSesion(req, res)
 );
 userRoutes.use(authMiddleware);
-userRoutes.post('/logout', authController.cerrarSesion);
+userRoutes.post('/logout', (req, res) => authController.cerrarSesion(req, res));
 
 userRoutes.get('/me', authController.obtenerSesionActual);
 userRoutes.get('/:id', UserController.obtenerUsuarioPorId);

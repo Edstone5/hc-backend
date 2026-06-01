@@ -87,6 +87,51 @@ export class IAuthRepository {
       'IAuthRepository.obtenerUsuarioPorUserCode() no implementado'
     );
   }
+
+  /**
+   * Persiste un refresh token emitido (rotación + revocación, ADR-0028).
+   * @param {{ jti:string, idUsuario:string, expiraEn:Date|string }} _datos
+   * @returns {Promise<void>}
+   * @abstract
+   */
+  async guardarRefreshToken(_datos) {
+    throw new Error('IAuthRepository.guardarRefreshToken() no implementado');
+  }
+
+  /**
+   * Obtiene el registro de un refresh token por su jti (o null si no existe).
+   * @param {string} _jti
+   * @returns {Promise<Object|null>}
+   * @abstract
+   */
+  async obtenerRefreshToken(_jti) {
+    throw new Error('IAuthRepository.obtenerRefreshToken() no implementado');
+  }
+
+  /**
+   * Marca un refresh token como revocado, opcionalmente enlazando el jti que lo
+   * reemplaza (rotación).
+   * @param {string} _jti
+   * @param {string|null} [_reemplazadoPor]
+   * @returns {Promise<void>}
+   * @abstract
+   */
+  async revocarRefreshToken(_jti, _reemplazadoPor) {
+    throw new Error('IAuthRepository.revocarRefreshToken() no implementado');
+  }
+
+  /**
+   * Revoca TODOS los refresh tokens vigentes de un usuario (logout-all o
+   * detección de reúso de un token robado).
+   * @param {string} _idUsuario
+   * @returns {Promise<void>}
+   * @abstract
+   */
+  async revocarTodosRefreshTokensDeUsuario(_idUsuario) {
+    throw new Error(
+      'IAuthRepository.revocarTodosRefreshTokensDeUsuario() no implementado'
+    );
+  }
 }
 
 export { DomainError, UserCodeValueObject, PasswordValueObject, AuthAggregate };

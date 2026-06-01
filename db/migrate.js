@@ -129,6 +129,23 @@ const PASOS = [
     nombre: '005 · idx_epb_historia',
     sql: `CREATE INDEX idx_epb_historia ON epb (id_historia, created_at)`,
   },
+  // ── 006: refresh_token (rotación + revocación, ADR-0028) ───────────────────
+  {
+    nombre: '006 · tabla refresh_token',
+    sql: `CREATE TABLE IF NOT EXISTS refresh_token (
+            jti             ${IDT}    NOT NULL PRIMARY KEY,
+            id_usuario      ${IDT}    NOT NULL,
+            revocado        BOOLEAN   NOT NULL DEFAULT FALSE,
+            reemplazado_por ${IDT}    NULL${C('jti que reemplazó a este (rotación)')},
+            expira_en       ${DT}     NOT NULL${C('Caducidad del refresh token')},
+            created_at      ${DT}     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE
+          )`,
+  },
+  {
+    nombre: '006 · idx_refresh_usuario',
+    sql: `CREATE INDEX idx_refresh_usuario ON refresh_token (id_usuario)`,
+  },
 ];
 
 async function migrar() {

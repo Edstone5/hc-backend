@@ -63,7 +63,18 @@ export class AuthController {
       };
 
       const accessToken = TokenService.generateAccessToken(user);
-      const refreshToken = TokenService.generateRefreshToken(user);
+      const {
+        token: refreshToken,
+        jti,
+        expiraEn,
+      } = TokenService.generateRefreshToken(user);
+
+      // Persistir el refresh token emitido para poder rotarlo/revocarlo (ADR-0028).
+      await repo.guardarRefreshToken({
+        jti,
+        idUsuario: user.id,
+        expiraEn,
+      });
 
       CookieService.setTokenCookies(res, accessToken, refreshToken);
 
@@ -77,8 +88,10 @@ export class AuthController {
   }
 
   // Renueva el access token usando el refresh token (cookie). No requiere un
-  // access token válido (de hecho se usa cuando ya expiró). Mantiene el refresh
-  // token vigente. Devuelve los datos del usuario para que el cliente reintente.
+  // access token válido (de hecho se usa cuando ya expiró). ROTACIÓN (ADR-0028):
+  // valida que el jti no esté revocado, lo revoca, emite un refresh token NUEVO
+  // (enlazado por reemplazado_por) y reemite ambas cookies. DETECCIÓN DE REÚSO:
+  // si llega un jti ya revocado, se revocan todos los tokens del usuario.
   async refrescarSesion(req, res) {
     try {
       const refreshToken = req.cookies.refreshToken;
@@ -86,9 +99,28 @@ export class AuthController {
         return res.status(401).json({ error: 'No refresh token provided' });
       }
       const decoded = TokenService.verifyRefreshToken(refreshToken);
-      if (!decoded || decoded.type !== 'refresh' || !decoded.id) {
+      if (
+        !decoded ||
+        decoded.type !== 'refresh' ||
+        !decoded.id ||
+        !decoded.jti
+      ) {
         return res.status(401).json({ error: 'Invalid refresh token' });
       }
+
+      // El jti debe existir y NO estar revocado. Si está revocado, es un reúso
+      // (token robado o ya rotado): se revoca toda la cadena del usuario.
+      const registro = await repo.obtenerRefreshToken(decoded.jti);
+      if (!registro) {
+        return res.status(401).json({ error: 'Invalid refresh token' });
+      }
+      const estaRevocado =
+        registro.revocado === true || registro.revocado === 1;
+      if (estaRevocado) {
+        await repo.revocarTodosRefreshTokensDeUsuario(decoded.id);
+        return res.status(401).json({ error: 'Refresh token reuse detected' });
+      }
+
       const row = await repo.obtenerUsuarioPorId(decoded.id);
       if (!row) {
         return res.status(401).json({ error: 'Invalid refresh token' });
@@ -101,8 +133,22 @@ export class AuthController {
         email: row.email,
         role: row.rol,
       };
+
+      // Rotación: emitir un refresh token nuevo y revocar el usado, enlazándolos.
       const accessToken = TokenService.generateAccessToken(user);
-      CookieService.setAccessCookie(res, accessToken);
+      const {
+        token: nuevoRefresh,
+        jti: nuevoJti,
+        expiraEn,
+      } = TokenService.generateRefreshToken(user);
+      await repo.guardarRefreshToken({
+        jti: nuevoJti,
+        idUsuario: user.id,
+        expiraEn,
+      });
+      await repo.revocarRefreshToken(decoded.jti, nuevoJti);
+
+      CookieService.setTokenCookies(res, accessToken, nuevoRefresh);
       return res.status(200).json(user);
     } catch {
       return res.status(500).json({ error: 'Internal server error' });
@@ -113,8 +159,21 @@ export class AuthController {
     return res.status(200).json(req.user);
   }
 
-  cerrarSesion(req, res) {
+  // Cierra sesión: revoca el refresh token actual (si lo hay) y limpia cookies.
+  async cerrarSesion(req, res) {
+    try {
+      const refreshToken = req.cookies?.refreshToken;
+      if (refreshToken) {
+        const decoded = TokenService.verifyRefreshToken(refreshToken);
+        if (decoded?.jti) {
+          await repo.revocarRefreshToken(decoded.jti, null);
+        }
+      }
+    } catch {
+      // No bloquear el logout por un fallo al revocar; las cookies se limpian igual.
+    }
     res.clearCookie('accessToken', { path: '/' });
+    res.clearCookie('refreshToken', { path: '/' });
     return res.status(200).json({ message: 'Logout exitoso' });
   }
 }

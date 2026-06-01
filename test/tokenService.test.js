@@ -30,15 +30,19 @@ describe('TokenService', () => {
     );
   });
 
-  it('generateRefreshToken calls jwt.sign with correct args', () => {
+  it('generateRefreshToken devuelve { token, jti, expiraEn } y firma con jti', () => {
     TokenService.generateAccessToken(user); // llamada previa
-    const token = TokenService.generateRefreshToken(user);
-    expect(token).toBe('token');
-    // Busca la llamada con los argumentos esperados
+    const result = TokenService.generateRefreshToken(user);
+    expect(result.token).toBe('token');
+    expect(typeof result.jti).toBe('string');
+    expect(result.jti.length).toBeGreaterThan(0);
+    expect(result.expiraEn instanceof Date).toBe(true);
+    // Busca la llamada con los argumentos esperados (incluye jti y type refresh)
     const found = jwt.sign.mock.calls.some(
       (call) =>
         call[0].id === 1 &&
         call[0].type === 'refresh' &&
+        typeof call[0].jti === 'string' &&
         call[2] &&
         call[2].expiresIn === '7d'
     );
@@ -49,9 +53,5 @@ describe('TokenService', () => {
     const result = TokenService.verifyAccessToken('token');
     expect(result).toEqual({ id: 1 });
     expect(jwt.verify).toHaveBeenCalledWith('token', expect.anything());
-  });
-
-  it('saveRefreshToken always returns true', () => {
-    expect(TokenService.saveRefreshToken(1, 'token')).toBe(true);
   });
 });

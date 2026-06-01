@@ -175,7 +175,7 @@ hc-backend/
 | ---------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `POST`     | `/api/users/login`                        | Iniciar sesión                                                                                                                                               |
 | `POST`     | `/api/users/register`                     | Registrar usuario                                                                                                                                            |
-| `POST`     | `/api/users/refresh`                      | Renovar access token (refresh cookie)                                                                                                                        |
+| `POST`     | `/api/users/refresh`                      | Renovar access token y **rotar** el refresh token (cookie); detecta reúso (ADR-0028)                                                                         |
 | `GET`      | `/api/users/me`                           | Usuario autenticado                                                                                                                                          |
 | `POST`     | `/api/patients`                           | Crear paciente                                                                                                                                               |
 | `POST`     | `/api/hc/draft`                           | Obtener/crear borrador HC                                                                                                                                    |

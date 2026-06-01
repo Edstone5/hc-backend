@@ -13,18 +13,26 @@ vi.mock('argon2', () => ({
 vi.mock('../services/tokenService.js', () => ({
   TokenService: {
     generateAccessToken: vi.fn().mockReturnValue('access_token'),
-    generateRefreshToken: vi.fn().mockReturnValue('refresh_token'),
+    generateRefreshToken: vi.fn().mockReturnValue({
+      token: 'refresh_token',
+      jti: 'jti-1',
+      expiraEn: new Date('2030-01-01'),
+    }),
+    verifyRefreshToken: vi.fn(),
   },
 }));
 
 vi.mock('../services/cookieServices.js', () => ({
   CookieService: {
     setTokenCookies: vi.fn(),
+    setAccessCookie: vi.fn(),
   },
 }));
 
 const mockAuthRepo = vi.hoisted(() => ({
   obtenerUsuarioPorUserCode: vi.fn(),
+  guardarRefreshToken: vi.fn(),
+  revocarRefreshToken: vi.fn(),
 }));
 
 vi.mock('../auth/infrastructure/authRepository.js', () => ({
@@ -37,6 +45,7 @@ vi.mock('../auth/infrastructure/authRepository.js', () => ({
 
 import argon2 from 'argon2';
 import { AuthController } from '../auth/application/authController.js';
+import { TokenService } from '../services/tokenService.js';
 
 const authCtrl = new AuthController();
 
@@ -71,6 +80,10 @@ describe('AuthController.iniciarSesion', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({ userCode: 'U001' })
+    );
+    // El refresh token emitido se persiste (rotación/revocación, ADR-0028).
+    expect(mockAuthRepo.guardarRefreshToken).toHaveBeenCalledWith(
+      expect.objectContaining({ jti: 'jti-1', idUsuario: '1' })
     );
   });
 
@@ -129,11 +142,30 @@ describe('AuthController.obtenerSesionActual', () => {
 });
 
 describe('AuthController.cerrarSesion', () => {
-  it('returns 200 on logout', () => {
-    const req = {};
+  beforeEach(() => vi.clearAllMocks());
+
+  it('returns 200 on logout y limpia cookies', async () => {
+    const req = { cookies: {} };
     const res = makeRes();
-    authCtrl.cerrarSesion(req, res);
+    await authCtrl.cerrarSesion(req, res);
     expect(res.clearCookie).toHaveBeenCalledWith('accessToken', { path: '/' });
+    expect(res.clearCookie).toHaveBeenCalledWith('refreshToken', { path: '/' });
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('revoca el refresh token si está presente', async () => {
+    TokenService.verifyRefreshToken.mockReturnValue({
+      id: '1',
+      type: 'refresh',
+      jti: 'jti-1',
+    });
+    const req = { cookies: { refreshToken: 'rt' } };
+    const res = makeRes();
+    await authCtrl.cerrarSesion(req, res);
+    expect(mockAuthRepo.revocarRefreshToken).toHaveBeenCalledWith(
+      'jti-1',
+      null
+    );
     expect(res.status).toHaveBeenCalledWith(200);
   });
 });
