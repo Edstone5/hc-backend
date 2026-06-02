@@ -121,6 +121,6 @@
 
 ## Resultado
 
-- Fecha: ****\_\_**** · Tester: ****\_\_****
+- Fecha: \***\*\_\_\*\*** · Tester: \***\*\_\_\*\***
 - Pasos ❌ (con detalle para abrir issue):
   - …
