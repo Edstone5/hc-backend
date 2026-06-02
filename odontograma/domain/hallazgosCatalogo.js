@@ -88,6 +88,28 @@ export const HALLAZGOS_ODONTO = [
   { codigo: 'DES', descripcion: 'Superficie desgastada', estado: 'malo' }, // §6.1.36
   { codigo: 'TC', descripcion: 'Tratamiento de conductos', estado: 'bueno' }, // §6.1.37
   { codigo: 'PLPC', descripcion: 'Pulpectomía', estado: 'bueno' }, // §6.1.37
+  // Restauración definitiva por material (§6.1.33): superficies pintadas de azul +
+  // sigla del material en azul mayúscula. (R ya existe arriba como resina; aquí se
+  // añaden AM/IV/IM/IE con la nomenclatura exacta de la norma. O/Io se conservan
+  // como códigos legados de "obturación" para compatibilidad con datos ya guardados.)
+  { codigo: 'AM', descripcion: 'Restauración con amalgama', estado: 'bueno' },
+  {
+    codigo: 'IV',
+    descripcion: 'Restauración con ionómero de vidrio',
+    estado: 'bueno',
+  },
+  {
+    codigo: 'IM',
+    descripcion: 'Restauración — incrustación metálica',
+    estado: 'bueno',
+  },
+  {
+    codigo: 'IE',
+    descripcion: 'Restauración — incrustación estética',
+    estado: 'bueno',
+  },
+  // Restauración temporal (§6.1.34): contorno en rojo (mal estado / provisional).
+  { codigo: 'RT', descripcion: 'Restauración temporal', estado: 'malo' },
 ];
 
 // Set de códigos válidos para validación O(1) en el dominio.
@@ -106,4 +128,10 @@ export const CLASE_CPOD = {
   O: 'obturado',
   R: 'obturado',
   Io: 'obturado',
+  // Restauraciones definitivas por material (NTS-188 §6.1.33) → obturado para CPO-D.
+  // La restauración temporal (RT) NO se cuenta como obturado (es provisional).
+  AM: 'obturado',
+  IV: 'obturado',
+  IM: 'obturado',
+  IE: 'obturado',
 };
