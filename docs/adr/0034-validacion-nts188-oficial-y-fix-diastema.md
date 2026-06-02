@@ -38,6 +38,11 @@ Confirmado **conforme** en el proyecto:
 - **§6.1.21 Pieza en clavija** = triángulo (`addPegTooth` dibuja triángulo). Además
   confirma que la clavija SÍ pertenece a la NTS-188 → su inclusión en el grupo de
   exclusión tamaño/forma (ADR-0033) es válida.
+- **§6.1.3 Corona** y **§6.1.4 Corona temporal** = un **cuadrado** que bordea la
+  corona clínica (corona: azul/rojo según estado; temporal: rojo + sigla CT). El
+  proyecto dibuja un `<rect>` con `stroke=color` vía `addCrown` (rama
+  `includedParts`): **conforme** (corregida la suposición errónea previa de que se
+  dibujaba como círculo).
 - Siglas y representación de Corona (CM/CF/CMC/CV/CLM), Macrodoncia (MAC),
   Microdoncia (MIC), Implante (IMP), Impactación (I), Ectópica (E), Movilidad (M),
   Pulpotomía (PP), FFP, Edéntulo, PPF/PPR/PDC, DDE (O/PE/Fluorosis): **coinciden**.
@@ -57,10 +62,6 @@ la "X".
 
 ## Discrepancias menores registradas (no implementadas — decisión del equipo)
 
-- **§6.1.4 Corona temporal**: la norma usa un **cuadrado** que encierra la pieza; el
-  proyecto la dibuja vía `addCrown` (forma de corona). La sigla **CT** y el color
-  (rojo, por ser temporal §5.12) sí son correctos. Cambiar la forma implica tocar
-  `addCrown` (compartido); se deja como mejora visual opcional.
 - **§6.1.16 Caries**: la norma subclasifica MB/CE/CD/CDP; el proyecto usa `C`.
 - **Hallazgos NTS-188 aún no implementados** (completitud, fuera de alcance): espigo
   muñón, remanente radicular, supernumeraria, pieza en erupción/extruida/intruida,
