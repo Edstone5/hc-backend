@@ -62,6 +62,32 @@ export const HALLAZGOS_ODONTO = [
   },
   { codigo: 'Ed-S', descripcion: 'Edéntulo superior', estado: 'malo' },
   { codigo: 'Ed-I', descripcion: 'Edéntulo inferior', estado: 'malo' },
+  // ── Hallazgos NTS N° 188-MINSA/DGIESP-2022 añadidos (ADR-0035) ──────────────
+  // Caries por severidad (§6.1.16)
+  { codigo: 'MB', descripcion: 'Caries — mancha blanca', estado: 'malo' },
+  { codigo: 'CE', descripcion: 'Caries en esmalte', estado: 'malo' },
+  { codigo: 'CD', descripcion: 'Caries en dentina', estado: 'malo' },
+  {
+    codigo: 'CDP',
+    descripcion: 'Caries en dentina con compromiso pulpar',
+    estado: 'malo',
+  },
+  { codigo: 'EM', descripcion: 'Espigo muñón', estado: 'bueno' }, // §6.1.8
+  { codigo: 'RR', descripcion: 'Remanente radicular', estado: 'malo' }, // §6.1.32
+  { codigo: 'SUP', descripcion: 'Pieza supernumeraria', estado: 'malo' }, // §6.1.26
+  { codigo: 'SELL', descripcion: 'Sellante', estado: 'bueno' }, // §6.1.35
+  { codigo: 'ERU', descripcion: 'Pieza en erupción', estado: 'neutro' }, // §6.1.23
+  { codigo: 'EXT', descripcion: 'Pieza extruida', estado: 'malo' }, // §6.1.24
+  { codigo: 'INT', descripcion: 'Pieza intruida', estado: 'malo' }, // §6.1.25
+  // Posición anormal dentaria (§6.1.28): M/D/V/P/L
+  { codigo: 'POS-M', descripcion: 'Posición: mesializado', estado: 'malo' },
+  { codigo: 'POS-D', descripcion: 'Posición: distalizado', estado: 'malo' },
+  { codigo: 'POS-V', descripcion: 'Posición: vestibularizado', estado: 'malo' },
+  { codigo: 'POS-P', descripcion: 'Posición: palatinizado', estado: 'malo' },
+  { codigo: 'POS-L', descripcion: 'Posición: lingualizado', estado: 'malo' },
+  { codigo: 'DES', descripcion: 'Superficie desgastada', estado: 'malo' }, // §6.1.36
+  { codigo: 'TC', descripcion: 'Tratamiento de conductos', estado: 'bueno' }, // §6.1.37
+  { codigo: 'PLPC', descripcion: 'Pulpectomía', estado: 'bueno' }, // §6.1.37
 ];
 
 // Set de códigos válidos para validación O(1) en el dominio.
@@ -71,6 +97,11 @@ export const CODIGOS_HALLAZGO = new Set(HALLAZGOS_ODONTO.map((h) => h.codigo));
 //   cariado | perdido | obturado | otro
 export const CLASE_CPOD = {
   C: 'cariado',
+  // Caries por severidad (NTS-188 §6.1.16): las lesiones cavitadas cuentan como
+  // cariado para CPO-D. La mancha blanca (MB) es precavitacional → no se cuenta.
+  CE: 'cariado',
+  CD: 'cariado',
+  CDP: 'cariado',
   DEX: 'perdido',
   O: 'obturado',
   R: 'obturado',
