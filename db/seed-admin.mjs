@@ -1,9 +1,10 @@
 /**
- * Script puntual para crear/actualizar un usuario administrador.
+ * Script puntual para crear/actualizar un usuario (admin, docente, etc.).
  * Idempotente: si el codigo_usuario ya existe, actualiza rol + contraseña.
  *
- * Uso:  node db/seed-admin.mjs <codigo_usuario> <password> [rol]
+ * Uso:  node db/seed-admin.mjs <codigo_usuario> <password> [rol] [nombre] [apellido]
  * Ej.:  node db/seed-admin.mjs 2023-119013 esis123 admin
+ *       node db/seed-admin.mjs docente1 esis123 docente Docente Pruebas
  *
  * Usa el pool del proyecto (respeta DATABASE_URL / NeonDB / dialecto).
  */
@@ -14,6 +15,14 @@ import pool from './db.js';
 const codigo = process.argv[2] || '2023-119013';
 const password = process.argv[3] || 'esis123';
 const rol = process.argv[4] || 'admin';
+const nombre =
+  process.argv[5] ||
+  (rol === 'docente'
+    ? 'Docente'
+    : rol === 'admin'
+      ? 'Administrador'
+      : 'Usuario');
+const apellido = process.argv[6] || 'Pruebas';
 
 const userCodeCol = pool.dialect === 'mysql' ? 'user_code' : 'codigo_usuario';
 const passwordCol = pool.dialect === 'mysql' ? 'password' : 'contrasena_hash';
@@ -41,8 +50,8 @@ async function main() {
       [
         id,
         codigo,
-        'Administrador',
-        'Pruebas',
+        nombre,
+        apellido,
         codigo.replace(/\D/g, '').slice(-8).padStart(8, '0'),
         `${codigo.replace(/[^0-9a-zA-Z]/g, '')}@unjbg.edu.pe`,
         rol,

@@ -85,6 +85,24 @@ export class HcController {
     }
   };
 
+  listarRevisionesHistoriaClinica = async (req, res) => {
+    try {
+      const idHistoria = req.params.id ?? req.query.id ?? req.body.id;
+      if (!idHistoria) {
+        return res.status(400).json({ error: 'Falta el id de la historia' });
+      }
+      const revisiones = await repo.listarRevisionesPorHistoria(idHistoria);
+      return res.status(200).json(revisiones);
+    } catch (err) {
+      if (esErrorDominio(err)) {
+        return res.status(400).json({ error: err.message });
+      }
+      return res
+        .status(500)
+        .json({ error: err.message || 'Error al listar las revisiones' });
+    }
+  };
+
   consultarPacientePorHistoriaClinica = async (req, res) => {
     try {
       const agregado = this.construirAgregadoConsultaPaciente(req);

@@ -10,6 +10,7 @@ import { DiagnosticoClinicasController } from '../diagnosticoClinicas/applicatio
 import { DiagnosticoPresuntivoController } from '../diagnosticoPresuntivo/application/diagnosticoPresuntivoController.js';
 import { EvolucionController } from '../evolucion/application/evolucionController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
+import requireRole from '../middlewares/requireRole.js';
 import { MotivoConsultaController } from '../motivoConsulta/application/motivoConsultaController.js';
 import { AntecedenteController } from '../antecedente/application/antecedenteController.js';
 import { EnfermedadActualController } from '../enfermedadActual/application/enfermedadActualController.js';
@@ -129,7 +130,14 @@ hcRoutes.put(
 
 hcRoutes.get('/:id/patient', hcController.consultarPacientePorHistoriaClinica);
 
-hcRoutes.post('/review', hcController.registrarRevisionHistoriaClinica);
+// Registrar revisión: solo docente/admin. Listar revisiones: cualquier usuario
+// autenticado (el estudiante ve la retroalimentación de su propia historia).
+hcRoutes.post(
+  '/review',
+  requireRole('docente', 'admin'),
+  hcController.registrarRevisionHistoriaClinica
+);
+hcRoutes.get('/:id/reviews', hcController.listarRevisionesHistoriaClinica);
 
 // Nuevas rutas para el flujo de borrador
 hcRoutes.post('/draft', hcController.obtenerBorradorHistoriaClinica);
@@ -315,6 +323,7 @@ hcRoutes.get(
 );
 hcRoutes.post(
   '/:id/fichas-operacion/:idFicha/evaluacion',
+  requireRole('docente', 'admin'),
   FichaEvaluacionController.evaluar
 );
 hcRoutes.get(

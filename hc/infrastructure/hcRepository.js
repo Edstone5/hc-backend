@@ -31,6 +31,32 @@ class HcRepository extends IHcRepository {
     return true;
   }
 
+  /**
+   * Lista las revisiones docentes registradas para una historia clínica, con el
+   * nombre del estado y los datos del docente. Orden cronológico descendente.
+   */
+  async listarRevisionesPorHistoria(idHistoria) {
+    const result = await pool.query(
+      `SELECT r.id_revision,
+              r.id_historia,
+              r.fecha,
+              r.observaciones,
+              c.nombre        AS estado,
+              u.nombre        AS docente_nombre,
+              u.apellido      AS docente_apellido,
+              u.codigo_usuario AS docente_codigo
+         FROM revision_historia r
+         LEFT JOIN catalogo_estado_revision c
+                ON c.id_estado_revision = r.id_estado_revision
+         LEFT JOIN usuario u
+                ON u.id_usuario = r.id_docente
+        WHERE r.id_historia = $1
+        ORDER BY r.fecha DESC`,
+      [idHistoria]
+    );
+    return result.rows || [];
+  }
+
   async crearHistoriaClinica(agregado) {
     const [idEstudiante] = agregado.obtenerParametros();
     const id = randomUUID();
