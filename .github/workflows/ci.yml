@@ -9,7 +9,7 @@ on:
   pull_request:
     branches: [main, testeo1, develop]
   push:
-    branches: [main, testeo1, develop]
+    branches: [main, testeo1, develop, 'feature/**', 'fix/**', 'hotfix/**']
 
 # Cancela ejecuciones antiguas del mismo PR/rama para ahorrar minutos.
 concurrency:
