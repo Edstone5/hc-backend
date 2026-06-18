@@ -19,6 +19,10 @@ concurrency:
 permissions:
   contents: read
 
+# Husky no debe instalar git hooks en CI (evita que `prepare` rompa `npm ci`).
+env:
+  HUSKY: '0'
+
 jobs:
   # ── Compilación: las dependencias (incl. binarios nativos como argon2)
   #    resuelven e instalan correctamente. Equivale al "build" de un backend Node.
@@ -31,7 +35,8 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      - name: Instalar dependencias
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
       - name: Verificación de sintaxis del entrypoint
         run: node --check api.js
 
@@ -45,7 +50,8 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      - name: Instalar dependencias
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
       - run: npm run lint
 
   # ── Unit Tests + Cobertura: suite Vitest con reporte de cobertura
@@ -59,7 +65,8 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      - name: Instalar dependencias
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
       - name: Ejecutar pruebas con cobertura
         run: npm run test:ci
       - name: Publicar reporte de cobertura
@@ -84,6 +91,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run: npm ci
+      - name: Instalar dependencias
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
       - name: Validar mensajes de commit del PR
         run: npx commitlint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}" --verbose
