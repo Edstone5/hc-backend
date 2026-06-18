@@ -1,0 +1,89 @@
+# CI — Compuerta de integración (PR Checks) del backend.
+# Laboratorio Dual S11: "Gobernanza del Cambio — PR Checks y Aprobaciones".
+# Implementa los checks objetivos que la máquina verifica ANTES de la revisión
+# humana (slide 10): Compilación (build), Linter, Unit Tests y Cobertura, más
+# una validación de política de Conventional Commits (commitlint).
+name: CI
+
+on:
+  pull_request:
+    branches: [main, testeo1, develop]
+  push:
+    branches: [main, testeo1, develop]
+
+# Cancela ejecuciones antiguas del mismo PR/rama para ahorrar minutos.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ── Compilación: las dependencias (incl. binarios nativos como argon2)
+  #    resuelven e instalan correctamente. Equivale al "build" de un backend Node.
+  build:
+    name: Compilación (npm ci)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Verificación de sintaxis del entrypoint
+        run: node --check api.js
+
+  # ── Linter: estilo y errores estáticos (ESLint).
+  lint:
+    name: Linter (eslint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+
+  # ── Unit Tests + Cobertura: suite Vitest con reporte de cobertura
+  #    (dominio + aplicación; la infraestructura se excluye — ADR-0003).
+  test:
+    name: Unit Tests + Cobertura (vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Ejecutar pruebas con cobertura
+        run: npm run test:ci
+      - name: Publicar reporte de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-backend
+          path: coverage/
+          retention-days: 7
+
+  # ── Política SCM: los mensajes de commit del PR cumplen Conventional Commits.
+  #    Solo aplica en pull_request (compara la base con el head del PR).
+  commitlint:
+    name: Política de commits (commitlint)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Validar mensajes de commit del PR
+        run: npx commitlint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}" --verbose

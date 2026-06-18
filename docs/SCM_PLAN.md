@@ -110,6 +110,12 @@ main          ◄── producción: solo PR aprobados, tags de versión
 | `feature/*` | Sin restricciones                                  | —                    |
 | `hotfix/*`  | PR a `main` Y `develop`                            | Merge commit         |
 
+> La aplicación efectiva de estas protecciones (branch protection rules, commits
+> firmados, CODEOWNERS) está especificada y automatizada en
+> [`docs/BRANCH_PROTECTION.md`](BRANCH_PROTECTION.md) +
+> [`scripts/apply-branch-protection.sh`](../scripts/apply-branch-protection.sh) (ADR-0041).
+> Los **PR Checks** se ejecutan vía GitHub Actions: `.github/workflows/ci.yml`.
+
 ### 3.3 Proceso de Solicitud de Cambio (CCR)
 
 ```
@@ -149,7 +155,9 @@ Desarrollador                 Revisor (CCB)              CI/CD
 
 ### 4.2 Registro de Cambios
 
-Todo cambio se registra en `CHANGELOG.md` con formato Keep a Changelog.
+Todo cambio se registra en [`docs/STATUS_ACCOUNTING.md`](STATUS_ACCOUNTING.md) (contabilidad
+de estado, formato RFC: ID cambio · IC afectado · aprobador · fecha · estado) y, para
+releases, en `CHANGELOG.md` con formato Keep a Changelog.
 
 ### 4.3 Trazabilidad
 

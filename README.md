@@ -1,6 +1,6 @@
 # HC Backend — Sistema de Historia Clínica UNJBG
 
-[![CI](https://github.com/vaquitamarina/hc-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/vaquitamarina/hc-backend/actions/workflows/ci.yml)
+[![CI](https://github.com/Edstone5/hc-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/Edstone5/hc-backend/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)](./coverage/index.html)
 [![Node.js](https://img.shields.io/badge/node-20_LTS-green)](https://nodejs.org)
 [![License](https://img.shields.io/badge/license-ISC-blue)](./LICENSE)
@@ -13,19 +13,19 @@ Backend REST del sistema de historia clínica digital para estudiantes y docente
 
 ## Características principales
 
-| Área                 | Detalle                                                                         |
-| -------------------- | ------------------------------------------------------------------------------- |
-| **Arquitectura**     | Hexagonal (Ports & Adapters) — 21 módulos de dominio                            |
-| **Runtime**          | Node.js 20 LTS + Express 5                                                      |
-| **Base de datos**    | MySQL 8.0 (schema completo en `db/init.sql`)                                    |
-| **Autenticación**    | JWT + cookies HttpOnly / Argon2id                                               |
-| **Tests**            | 1 389 tests unitarios + 91 escenarios BDD — cobertura **93 %**                  |
-| **Mutation Testing** | Stryker — score **85.67%** (umbral alto: 80%)                                   |
-| **Observabilidad**   | `/health` (liveness probe) + `/metrics` (Prometheus)                            |
-| **Documentación**    | Swagger UI en `/api/api-docs` (seguridad global cookieAuth)                     |
-| **CI/CD**            | GitHub Actions — 6 jobs: tests + lint + commitlint + integración + BDD + deploy |
-| **GitOps**           | Watchtower pull-based + reconcile.sh + deploy.yml (ADR-0005)                    |
-| **ADRs**             | 40 Architecture Decision Records en `docs/adr/`                                 |
+| Área                 | Detalle                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| **Arquitectura**     | Hexagonal (Ports & Adapters) — 21 módulos de dominio                               |
+| **Runtime**          | Node.js 20 LTS + Express 5                                                         |
+| **Base de datos**    | MySQL 8.0 (schema completo en `db/init.sql`)                                       |
+| **Autenticación**    | JWT + cookies HttpOnly / Argon2id                                                  |
+| **Tests**            | 1 389 tests unitarios + 91 escenarios BDD — cobertura **93 %**                     |
+| **Mutation Testing** | Stryker — score **85.67%** (umbral alto: 80%)                                      |
+| **Observabilidad**   | `/health` (liveness probe) + `/metrics` (Prometheus)                               |
+| **Documentación**    | Swagger UI en `/api/api-docs` (seguridad global cookieAuth)                        |
+| **CI/CD**            | GitHub Actions — PR Checks: build + lint + tests/cobertura + commitlint (`ci.yml`) |
+| **GitOps**           | Watchtower pull-based + reconcile.sh + deploy.yml (ADR-0005)                       |
+| **ADRs**             | 41 Architecture Decision Records en `docs/adr/`                                    |
 
 ---
 
@@ -150,7 +150,7 @@ hc-backend/
 │   ├── tokenService.js
 │   └── cookieServices.js
 ├── docs/                       # Swagger JSDoc + documentación
-│   ├── adr/                    # 40 Architecture Decision Records
+│   ├── adr/                    # 41 Architecture Decision Records
 │   ├── SCM_PLAN.md             # IEEE 828 SCM Plan
 │   ├── SLO.md                  # Service Level Objectives
 │   ├── SAD.md                  # Software Architecture Document
@@ -160,7 +160,7 @@ hc-backend/
 │   ├── prometheus.yml          # Config de scrape
 │   └── grafana/                # Datasource + dashboard provisioning
 ├── test/                       # 79 archivos de test (Vitest)
-├── .github/workflows/ci.yml    # CI/CD: tests + lint + integración + deploy
+├── .github/workflows/ci.yml    # PR Checks: build + lint + tests/cobertura + commitlint
 ├── docker-compose.yml          # MySQL + Backend + Frontend + Prometheus + Grafana
 ├── Dockerfile
 ├── commitlint.config.js        # Conventional Commits enforcement
@@ -243,19 +243,21 @@ open http://localhost:3001
 
 ## Documentación técnica
 
-| Documento                                                                                              | Descripción                                             |
-| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
-| [`docs/SAD.md`](./docs/SAD.md)                                                                         | Software Architecture Document (vistas C4, ADRs)        |
-| [`docs/SCM_PLAN.md`](./docs/SCM_PLAN.md)                                                               | Plan IEEE 828 de Gestión de Configuración               |
-| [`docs/SLO.md`](./docs/SLO.md)                                                                         | Service Level Objectives (disponibilidad, latencia)     |
-| [`docs/GIT_FLOW.md`](./docs/GIT_FLOW.md)                                                               | Guía de trabajo con Git Flow                            |
-| [`docs/BASELINE.md`](./docs/BASELINE.md)                                                               | Bitácora de baselines firmadas (v1.1.0) + deuda SCM     |
-| [`docs/adr/`](./docs/adr/)                                                                             | Architecture Decision Records (ADR-0001 a **ADR-0040**) |
-| [`docs/adr/0006-consentimiento-informado-rf09.md`](./docs/adr/0006-consentimiento-informado-rf09.md)   | ADR-0006: Módulo Consentimiento Informado               |
-| [`docs/adr/0007-exportacion-pdf-rf08.md`](./docs/adr/0007-exportacion-pdf-rf08.md)                     | ADR-0007: Mejora exportación PDF                        |
-| [`docs/adr/0008-consolidacion-odontograma-rf06.md`](./docs/adr/0008-consolidacion-odontograma-rf06.md) | ADR-0008: Consolidación Odontograma                     |
-| [`CHANGELOG.md`](./CHANGELOG.md)                                                                       | Historial de cambios (Keep a Changelog) — **v2.2.0**    |
-| [`db/migrations/`](./db/migrations/)                                                                   | Migraciones SQL para instancias existentes              |
+| Documento                                                                                              | Descripción                                              |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| [`docs/SAD.md`](./docs/SAD.md)                                                                         | Software Architecture Document (vistas C4, ADRs)         |
+| [`docs/SCM_PLAN.md`](./docs/SCM_PLAN.md)                                                               | Plan IEEE 828 de Gestión de Configuración                |
+| [`docs/SLO.md`](./docs/SLO.md)                                                                         | Service Level Objectives (disponibilidad, latencia)      |
+| [`docs/GIT_FLOW.md`](./docs/GIT_FLOW.md)                                                               | Guía de trabajo con Git Flow                             |
+| [`docs/BASELINE.md`](./docs/BASELINE.md)                                                               | Bitácora de baselines firmadas (v1.1.0) + deuda SCM      |
+| [`docs/BRANCH_PROTECTION.md`](./docs/BRANCH_PROTECTION.md)                                             | Reglas de protección de rama + script `gh api` (Lab S11) |
+| [`docs/STATUS_ACCOUNTING.md`](./docs/STATUS_ACCOUNTING.md)                                             | Contabilidad de estado (registro RFC de cambios)         |
+| [`docs/adr/`](./docs/adr/)                                                                             | Architecture Decision Records (ADR-0001 a **ADR-0041**)  |
+| [`docs/adr/0006-consentimiento-informado-rf09.md`](./docs/adr/0006-consentimiento-informado-rf09.md)   | ADR-0006: Módulo Consentimiento Informado                |
+| [`docs/adr/0007-exportacion-pdf-rf08.md`](./docs/adr/0007-exportacion-pdf-rf08.md)                     | ADR-0007: Mejora exportación PDF                         |
+| [`docs/adr/0008-consolidacion-odontograma-rf06.md`](./docs/adr/0008-consolidacion-odontograma-rf06.md) | ADR-0008: Consolidación Odontograma                      |
+| [`CHANGELOG.md`](./CHANGELOG.md)                                                                       | Historial de cambios (Keep a Changelog) — **v2.2.0**     |
+| [`db/migrations/`](./db/migrations/)                                                                   | Migraciones SQL para instancias existentes               |
 
 ---
 

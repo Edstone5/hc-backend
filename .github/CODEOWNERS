@@ -1,0 +1,29 @@
+# CODEOWNERS — Revisión obligatoria por dueño de código (PR Checks / Lab S11).
+# GitHub solicita automáticamente la revisión del owner cuando un PR toca sus rutas.
+# Mapea a los roles del equipo. Reemplaza los handles entre <> por los reales de
+# cada integrante en GitHub (solo se conoce el de Edson: @Edstone5).
+#
+#   Full stack ...... Edu Puma <@edu-handle>, Jheral Maquera <@jheral-handle>
+#   Calidad ......... Lisbeth Huanca <@lisbeth-handle>
+#   Tester / SCM .... Edson Condemaita @Edstone5
+#   Scrum master .... Edgar Leyva <@edgar-handle>
+
+# Por defecto: cualquier cambio requiere revisión del responsable de SCM.
+*                       @Edstone5
+
+# Configuración y gobernanza (Scrum master) — añade aquí el handle de Edgar.
+/.github/                @Edstone5
+/docs/                   @Edstone5
+/docs/adr/               @Edstone5
+/.env.example            @Edstone5
+
+# Código backend y base de datos (Full stack) — añade handles de Edu/Jheral.
+/hc/                     @Edstone5
+/routes/                 @Edstone5
+/middlewares/            @Edstone5
+/db/                     @Edstone5
+/odontograma/            @Edstone5
+
+# Secretos, baseline y firma (Tester / responsable SCM).
+/docs/BASELINE.md        @Edstone5
+/docs/gpg/               @Edstone5
