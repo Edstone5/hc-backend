@@ -77,6 +77,23 @@ jobs:
           path: coverage/
           retention-days: 7
 
+  # ── Quality Gate (Fase 3): la cobertura de la lógica de negocio (núcleo de
+  #    dominio) debe ser ≥ 80 % de líneas; si baja, el pipeline FALLA y bloquea
+  #    el merge. Umbral en vitest.coverage.config.js.
+  quality-gate:
+    name: Quality Gate (cobertura ≥80%)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Instalar dependencias
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+      - name: Quality gate de cobertura (falla si <80%)
+        run: npm run test:cov
+
   # ── Política SCM: los mensajes de commit del PR cumplen Conventional Commits.
   #    Solo aplica en pull_request (compara la base con el head del PR).
   commitlint:
@@ -95,3 +112,41 @@ jobs:
         run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
       - name: Validar mensajes de commit del PR
         run: npx commitlint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}" --verbose
+
+  # ── Status Accounting (Fase 5 + Desafío #4): tras un merge exitoso a la rama
+  #    principal, registra los metadatos del cambio (scm-status-report.json) y
+  #    publica un log anotado en el historial de Releases. Solo corre si los
+  #    checks de calidad pasaron.
+  status-accounting:
+    name: Status Accounting (registro de estado)
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/testeo1' || github.ref == 'refs/heads/main')
+    needs: [build, lint, test, quality-gate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Generar reporte de contabilidad de estado
+        run: node scripts/scm-status-report.mjs
+        env:
+          SCM_CI_STATUS: passed
+      - name: Publicar reporte como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: scm-status-report
+          path: scm-status-report.json
+          retention-days: 30
+      - name: Publicar log anotado en el historial de releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="scm-${{ github.run_number }}"
+          gh release create "$TAG" \
+            --title "Status Accounting — $TAG" \
+            --notes-file scm-status-report.json \
+            --target "${{ github.sha }}" || echo "release $TAG ya existe"

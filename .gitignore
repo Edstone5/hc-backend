@@ -50,3 +50,5 @@ pdf_*.txt
 mysql_data/
 prometheus_data/
 grafana_data/
+
+scm-status-report.json

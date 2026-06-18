@@ -55,10 +55,12 @@ export default {
   },
 
   // ── Quality gates ─────────────────────────────────────────────────────────
+  // Quality gate (Lab Dual, Fase 3): el pipeline FALLA si el mutation score
+  // cae por debajo de 60 (criterio "Logrado" de la rúbrica: mutation score ≥ 60%).
   thresholds: {
     high: 80,
     low: 60,
-    break: 0,
+    break: 60,
   },
 
   // ── Performance ───────────────────────────────────────────────────────────

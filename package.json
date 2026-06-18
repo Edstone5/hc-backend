@@ -7,6 +7,7 @@
   "scripts": {
     "test": "vitest",
     "test:ci": "vitest run --coverage",
+    "test:cov": "vitest run --coverage --config vitest.coverage.config.js",
     "test:bdd": "cucumber-js",
     "test:mutation": "stryker run",
     "dev": "dotenv -e .env.local -- node --watch api.js",
