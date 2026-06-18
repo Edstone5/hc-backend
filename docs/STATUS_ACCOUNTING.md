@@ -11,10 +11,10 @@ IEEE 828-2012.
 ## Estado actual
 
 | Campo               | Valor                                                        |
-| ------------------- | ------------------------------------------------------------ | ------------- |
+| ------------------- | ------------------------------------------------------------ |
 | Línea base vigente  | `v1.1.0` (firmada GPG — ver [BASELINE.md](BASELINE.md))      |
 | Rama de integración | `testeo1` (backend) · `main` (frontend)                      |
-| Versión backend     | `2.1.0` · Versión frontend                                   | `0.0.0` (MVP) |
+| Versión             | backend `2.1.0` · frontend `0.0.0` (MVP)                     |
 | Calidad             | 1468 pruebas backend ✅ · 136 frontend ✅ · ESLint 0 errores |
 
 ## Cómo se asigna un ID de cambio (RFC)
