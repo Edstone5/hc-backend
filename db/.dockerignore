@@ -1,0 +1,8 @@
+# La imagen de BD solo necesita el esquema y las migraciones SQL.
+# Excluimos el código de aplicación (runner, conexión, seeds) y la documentación.
+db.js
+migrate.js
+seed-*.mjs
+*.md
+Dockerfile
+.dockerignore

@@ -1,0 +1,70 @@
+# ============================================================
+#  Compose del Laboratorio de Docker (Virtualización y Despliegue)
+#
+#  Orquesta la IMAGEN DE BD VERSIONADA (hc-db:1.1.0, construida desde ./db) junto
+#  al backend (hc-backend:1.1.0). Está AISLADO del docker-compose.yml de
+#  producción (que añade observabilidad y GitOps), para mantener el laboratorio
+#  simple y reproducible.
+#
+#  Uso:
+#     docker compose -f docker-compose.lab.yml up -d --build
+#     docker compose -f docker-compose.lab.yml ps
+#     docker compose -f docker-compose.lab.yml down       # (-v para borrar datos)
+# ============================================================
+services:
+  # ── Base de datos: imagen propia versionada (esquema + migraciones) ─────────
+  hc-db:
+    build: ./db
+    image: hc-db:1.1.0
+    container_name: hc_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: hc_db
+      MYSQL_USER: hc_user
+      MYSQL_PASSWORD: hc_password
+    ports:
+      - '3306:3306'
+    volumes:
+      - hc_db_data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'mysqladmin',
+          'ping',
+          '-h',
+          'localhost',
+          '-uroot',
+          '-proot_password',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ── Backend (aplicación web propia) ─────────────────────────────────────────
+  backend:
+    build: .
+    image: hc-backend:1.1.0
+    container_name: hc_backend_lab
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    depends_on:
+      hc-db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=hc-db
+      - DB_USER=hc_user
+      - DB_PASSWORD=hc_password
+      - DB_NAME=hc_db
+      - DB_PORT=3306
+      - JWT_SECRET=lab_secret_change_me
+      - JWT_REFRESH_SECRET=lab_refresh_change_me
+      - PORT=3000
+      - NODE_ENV=production
+
+volumes:
+  hc_db_data:
+    driver: local
