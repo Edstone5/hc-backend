@@ -1,0 +1,15 @@
+# Evita copiar dependencias del host (binarios nativos como argon2 no son
+# compatibles con Alpine/musl) y artefactos pesados o sensibles al contexto.
+node_modules
+coverage
+.git
+.github
+.husky
+*.log
+.env
+.env.*
+!.env.example
+.vscode
+stryker.config.mjs
+reports
+.stryker-tmp

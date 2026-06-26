@@ -39,6 +39,23 @@ Crear una imagen propia `hc-db` con su esquema **horneado** dentro (no montado):
 5. El historial completo de migraciones permanece versionado en `db/migrations/` y en git;
    la imagen es el empaquetado reproducible de un punto de ese historial.
 
+## Actualización (2026-06-26): imagen primaria desde el repositorio de BD real
+
+La base de datos real del equipo vive en un repositorio propio dedicado
+(`7Stillz/hc-db`, PostgreSQL/NeonDB). Por fidelidad con "nuestra base de datos", la
+**imagen entregable principal es PostgreSQL**, construida desde ese repositorio:
+
+- `hc-db/Dockerfile` parte de `postgres:16-alpine`, copia el repositorio y, en el primer
+  arranque, ejecuta el deploy maestro `deployment/deploy_full.sql` (que incluye con `\i`
+  todo el árbol `database/` y los `seeds/`). Verificado: levanta **33 tablas**.
+- Etiqueta **`hc-db:1.0.0`**, igual a la versión declarada en `deploy_full.sql`.
+- Como el repositorio es de otro integrante (sin permiso de push para nuestra cuenta), el
+  Dockerfile se entrega como **parche firmado** (`hc-db_dockerize.patch`) para integrarlo
+  vía PR/fork.
+
+La imagen **MySQL** descrita arriba (`db/Dockerfile`, `mysql:8.0`) se conserva como
+**espejo local de desarrollo** del esquema, no como entregable principal.
+
 ## Consecuencias
 
 - **Positivas:** artefacto de BD reproducible e identificable por versión; consistencia
