@@ -1,5 +1,7 @@
 # HC Backend — Sistema de Historia Clínica UNJBG
 
+# Linea adicional para comprobar correcto funcionamiento
+
 [![CI](https://github.com/Edstone5/hc-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/Edstone5/hc-backend/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)](./coverage/index.html)
 [![Node.js](https://img.shields.io/badge/node-20_LTS-green)](https://nodejs.org)
