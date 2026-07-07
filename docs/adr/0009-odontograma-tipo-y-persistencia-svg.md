@@ -2,7 +2,7 @@
 
 **Estado:** Aceptado ✅
 **Fecha:** 2026-05-30
-**Decididores:** Equipo Grupo 4 (decisión del PM en sesión de trabajo)
+**Decididores:** Equipo Grupo 2 (decisión del PM en sesión de trabajo)
 **Requisito cubierto:** RF-06 — Odontogramas (inicial y evolutivo)
 **Norma aplicable:** NTS N° 150-MINSA/2022/DGIESP (uso del odontograma)
 

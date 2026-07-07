@@ -2,7 +2,7 @@
 
 **Estado:** Aceptado ✅
 **Fecha:** 2026-05-30
-**Decididores:** Equipo Grupo 4 (PM pidió "terminar los tracks")
+**Decididores:** Equipo Grupo 2 (PM pidió "terminar los tracks")
 **Requisitos:** RF-06, RF-08 (PDF), RNF (tablet/mantenibilidad)
 
 ---
