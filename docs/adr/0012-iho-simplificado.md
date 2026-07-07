@@ -2,7 +2,7 @@
 
 **Estado:** Aceptado ✅
 **Fecha:** 2026-05-30
-**Decididores:** Equipo Grupo 4
+**Decididores:** Equipo Grupo 2
 **Requisito cubierto:** Flujo de atención MINSA / odontopediatría (índices de higiene)
 **Norma aplicable:** Índice de Greene y Vermillion (IHO-S), uso estándar MINSA
 

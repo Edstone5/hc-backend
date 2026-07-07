@@ -2,7 +2,7 @@
 
 **Estado:** Aceptado ✅
 **Fecha:** 2026-05-30
-**Decididores:** Equipo Grupo 4
+**Decididores:** Equipo Grupo 2
 **Requisito cubierto:** RF-12 (informes clínico-epidemiológicos) + flujo MINSA
 **Norma aplicable:** Indicadores epidemiológicos OMS/MINSA (CPO-D, CEO-D)
 

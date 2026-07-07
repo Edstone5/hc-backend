@@ -2,7 +2,7 @@
 
 **Estado:** Aceptado ✅  
 **Fecha:** 2026-05-30  
-**Decididores:** Equipo Grupo 4  
+**Decididores:** Equipo Grupo 2  
 **Requisito cubierto:** RF-08 — Exportar/Imprimir en PDF
 
 ---

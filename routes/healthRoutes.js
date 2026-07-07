@@ -63,3 +63,68 @@ healthRouter.get('/', async (_req, res) => {
     });
   }
 });
+
+/**
+ * GET /health/live — Liveness probe (SWEBOK v4: adaptador de salud).
+ *
+ * Responde 200 mientras el proceso Node.js esté vivo. NO consulta la base de
+ * datos a propósito: una caída de la BD no debe provocar el reinicio del pod
+ * (reiniciar no arregla una BD caída); esa condición la gobierna readiness.
+ *
+ * @swagger
+ * /health/live:
+ *   get:
+ *     tags: [Observabilidad]
+ *     summary: Liveness probe (proceso vivo)
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: El proceso está vivo
+ */
+healthRouter.get('/live', (_req, res) => {
+  return res.status(200).json({
+    status: 'alive',
+    uptime_ms: Date.now() - startTime,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/**
+ * GET /health/ready — Readiness probe (SWEBOK v4: adaptador de salud).
+ *
+ * Responde 200 solo si el dominio está listo para recibir tráfico, es decir,
+ * si el adaptador de persistencia (MySQL) responde. Si la BD no está
+ * disponible devuelve 503: Kubernetes retira el pod de los endpoints del
+ * Service sin matarlo, y la caída del SLO queda observable en Prometheus.
+ *
+ * @swagger
+ * /health/ready:
+ *   get:
+ *     tags: [Observabilidad]
+ *     summary: Readiness probe (dominio listo para tráfico)
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: Listo (BD conectada)
+ *       503:
+ *         description: No listo (BD no disponible)
+ */
+healthRouter.get('/ready', async (_req, res) => {
+  const uptimeMs = Date.now() - startTime;
+  try {
+    await pool.query('SELECT 1');
+    return res.status(200).json({
+      status: 'ready',
+      uptime_ms: uptimeMs,
+      timestamp: new Date().toISOString(),
+      db: 'connected',
+    });
+  } catch {
+    return res.status(503).json({
+      status: 'not_ready',
+      uptime_ms: uptimeMs,
+      timestamp: new Date().toISOString(),
+      db: 'disconnected',
+    });
+  }
+});
