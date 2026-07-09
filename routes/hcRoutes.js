@@ -29,6 +29,7 @@ import { FichaEvaluacionController } from '../fichaEvaluacion/application/fichaE
 import { CitaController } from '../cita/application/citaController.js';
 import { AuditoriaController } from '../auditoria/application/auditoriaController.js';
 import { ConsentimientoController } from '../consentimiento/application/consentimientoController.js';
+import { InformeFinalController } from '../informeFinal/application/informeFinalController.js';
 
 export const hcRoutes = Router();
 
@@ -329,6 +330,14 @@ hcRoutes.post(
 hcRoutes.get(
   '/docente/evaluaciones',
   FichaEvaluacionController.listarPorDocente
+);
+
+// --- INFORME FINAL DE INTERVENCIÓN (RF-13) ---
+hcRoutes.get('/:id/informe-final', InformeFinalController.listarPorHistoria);
+hcRoutes.post('/:id/informe-final', InformeFinalController.generar);
+hcRoutes.patch(
+  '/:id/informe-final/:idInforme/enviar',
+  InformeFinalController.enviarParaValidacion
 );
 
 // --- CONSENTIMIENTO INFORMADO (RF-09) ---
