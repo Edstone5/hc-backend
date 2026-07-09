@@ -21,7 +21,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:5173',
-      'https://vaquitamarina.github.io',
+      'https://edstone5.github.io',
       'http://161.132.4.46',
       'http://unjbghc.duckdns.org',
       'https://unjbghc.duckdns.org',

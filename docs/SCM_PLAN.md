@@ -229,20 +229,20 @@ git merge release/v2.1.0
 
 ### 6.2 Artefactos de Release
 
-- Docker image: `ghcr.io/vaquitamarina/hc-backend:v{VERSION}`
+- Docker image: `edstone05/hc-backend:v{VERSION}` (Docker Hub)
 - Release notes en GitHub Releases
 
 ---
 
 ## 7. Herramientas SCM
 
-| Herramienta       | Uso                            | URL                      |
-| ----------------- | ------------------------------ | ------------------------ |
-| Git 2.x           | Control de versiones           | local                    |
-| GitHub            | Repositorio remoto, PR, Issues | github.com/vaquitamarina |
-| GitHub Actions    | CI/CD pipeline                 | `.github/workflows/`     |
-| Vitest            | Suite de tests + cobertura     | —                        |
-| Docker Hub / GHCR | Registro de imágenes           | —                        |
+| Herramienta       | Uso                            | URL                  |
+| ----------------- | ------------------------------ | -------------------- |
+| Git 2.x           | Control de versiones           | local                |
+| GitHub            | Repositorio remoto, PR, Issues | github.com/Edstone5  |
+| GitHub Actions    | CI/CD pipeline                 | `.github/workflows/` |
+| Vitest            | Suite de tests + cobertura     | —                    |
+| Docker Hub / GHCR | Registro de imágenes           | —                    |
 
 ---
 

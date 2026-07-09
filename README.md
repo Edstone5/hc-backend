@@ -37,7 +37,7 @@ Backend REST del sistema de historia clínica digital para estudiantes y docente
 
 ```bash
 # Clona el repo
-git clone https://github.com/vaquitamarina/hc-backend.git
+git clone https://github.com/Edstone5/hc-backend.git
 cd hc-backend
 
 # Configura las variables de entorno

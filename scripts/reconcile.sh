@@ -25,7 +25,7 @@
 #   HC_DIR=/srv/hc-backend       # directorio del proyecto
 #   HC_BRANCH=main               # rama a seguir
 #   GHCR_TOKEN=ghp_xxx           # token para docker login a GHCR
-#   GHCR_USER=vaquitamarina      # usuario de GitHub
+#   GHCR_USER=Edstone5           # usuario de GitHub
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
