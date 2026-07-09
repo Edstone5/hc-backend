@@ -15,23 +15,28 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "prepare": "husky",
-    "start": "node api.js",
-    "start:prod": "NODE_ENV=production node api.js",
+    "start": "node --import ./tracing.js api.js",
+    "start:notrace": "node api.js",
+    "start:prod": "NODE_ENV=production node --import ./tracing.js api.js",
     "db:init": "mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME < db/init.sql",
     "db:migrate": "node db/migrate.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vaquitamarina/hc-backend.git"
+    "url": "git+https://github.com/Edstone5/hc-backend.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/vaquitamarina/hc-backend/issues"
+    "url": "https://github.com/Edstone5/hc-backend/issues"
   },
-  "homepage": "https://github.com/vaquitamarina/hc-backend#readme",
+  "homepage": "https://github.com/Edstone5/hc-backend#readme",
   "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.78.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.220.0",
+    "@opentelemetry/sdk-node": "^0.220.0",
     "@supabase/supabase-js": "^2.106.2",
     "argon2": "^0.44.0",
     "cookie-parser": "^1.4.7",
