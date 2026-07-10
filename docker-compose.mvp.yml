@@ -1,0 +1,166 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  MVP en Docker — Sistema de Historia Clínica Odontológica (equipo Vaca Code)
+#
+#  Levanta el sistema COMPLETO con un solo comando, coherente con cómo corre la
+#  app en `npm run dev`: PostgreSQL (con el esquema + datos reales que usa el
+#  proyecto), el backend hexagonal y el frontend React/Vite.
+#
+#  Uso:
+#     docker compose -f docker-compose.mvp.yml up -d --build
+#     → Frontend:  http://localhost:5173
+#     → API:       http://localhost:3000/api  (Swagger en /api/api-docs)
+#     → Postgres:  localhost:5432  (usuario postgres / postgres, BD hc)
+#  Apagar:  docker compose -f docker-compose.mvp.yml down      (‑v borra la BD)
+# ═══════════════════════════════════════════════════════════════════════════
+name: hc-mvp
+
+services:
+  # ── Base de datos PostgreSQL ───────────────────────────────────────────────
+  # Se inicializa en el primer arranque con el snapshot real del esquema del
+  # proyecto (52 tablas + datos de prueba: usuarios, pacientes, historias).
+  db:
+    image: postgres:16
+    container_name: hc_mvp_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hc
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./mvp/neon_snapshot.sql:/docker-entrypoint-initdb.d/10-snapshot.sql:ro
+      - hc_mvp_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d hc']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  # ── Backend (Node.js / Express, arquitectura hexagonal) ────────────────────
+  # DATABASE_URL apunta al Postgres local (sin SSL: db.js lo detecta y no fuerza
+  # SSL, a diferencia de Neon). No necesita .env: toda la config va por entorno.
+  backend:
+    build: .
+    container_name: hc_mvp_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/hc
+      JWT_SECRET: demo_mvp_jwt_secret
+      JWT_REFRESH_SECRET: demo_mvp_refresh_secret
+      PORT: '3000'
+      NODE_ENV: production
+      # Observabilidad OTel deshabilitada en el MVP local (tracing.js hace no-op
+      # igualmente sin endpoint; esto lo hace explícito y silencioso).
+      OTEL_SDK_DISABLED: 'true'
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'wget -qO- http://localhost:3000/health/live || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
+  # ── Frontend (React / Vite) ────────────────────────────────────────────────
+  # Sirve la SPA; el navegador (en el host) llama a la API en localhost:3000.
+  frontend:
+    build: ../hc-frontend
+    container_name: hc_mvp_frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - '5173:5173'
+    environment:
+      VITE_API_URL: http://localhost:3000/api
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  #  FRENTE B — Hexagonalidad PG↔MySQL en vivo   (perfil: mysql)
+  #
+  #  Estos servicios NO arrancan con el `up` normal (Frente A queda intacto).
+  #  Se activan con:   docker compose -f docker-compose.mvp.yml --profile mysql up -d --build
+  #
+  #  Demuestran el puerto hexagonal: el MISMO artefacto/código del backend habla
+  #  con DOS motores distintos; lo único que cambia es DATABASE_URL.
+  #     :3000  → backend  → PostgreSQL   (Frente A)
+  #     :3001  → backend-mysql → MySQL    (Frente B, mismo código)
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  # ── Base de datos MySQL 8 ──────────────────────────────────────────────────
+  # init.sql crea y usa el esquema `hc_db` (esquema canónico MySQL, 48 tablas);
+  # por eso MYSQL_DATABASE=hc_db, para que el seed corra en ese mismo esquema.
+  mysql:
+    image: mysql:8.4
+    container_name: hc_mvp_mysql
+    profiles: ['mysql']
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hc_db
+    ports:
+      - '3307:3306'
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+      - ./mvp/demo_seed.sql:/docker-entrypoint-initdb.d/20-demo.sql:ro
+      - hc_mvp_mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1', '-uroot', '-proot']
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 30s
+
+  # ── Migrador one-shot (dialect-aware) ──────────────────────────────────────
+  # init.sql trae 48 tablas pero NO refresh_token ni informe_final; el runner
+  # 001-007 las crea sobre MySQL (idempotente) — el login las necesita.
+  mysql-migrate:
+    build: .
+    profiles: ['mysql']
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql://root:root@mysql:3306/hc_db
+      NODE_ENV: production
+    command: ['node', 'db/migrate.js']
+    restart: 'no'
+
+  # ── Backend apuntando a MySQL (mismo build; solo cambia DATABASE_URL) ──────
+  backend-mysql:
+    build: .
+    container_name: hc_mvp_backend_mysql
+    profiles: ['mysql']
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mysql-migrate:
+        condition: service_completed_successfully
+    ports:
+      - '3001:3000'
+    environment:
+      DATABASE_URL: mysql://root:root@mysql:3306/hc_db
+      JWT_SECRET: demo_mvp_jwt_secret
+      JWT_REFRESH_SECRET: demo_mvp_refresh_secret
+      PORT: '3000'
+      NODE_ENV: production
+      OTEL_SDK_DISABLED: 'true'
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'wget -qO- http://localhost:3000/health/live || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
+volumes:
+  hc_mvp_pgdata:
+    driver: local
+  hc_mvp_mysqldata:
+    driver: local

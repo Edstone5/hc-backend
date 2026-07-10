@@ -7,11 +7,11 @@ import { randomUUID } from 'crypto';
 import { IUserRepository } from '../domain/userDomain.js';
 import pool from '../../db/db.js';
 
-// Column name for user_code differs between dialects
-const userCodeCol = () =>
-  pool.dialect === 'mysql' ? 'user_code' : 'codigo_usuario';
-const passwordCol = () =>
-  pool.dialect === 'mysql' ? 'password' : 'contrasena_hash';
+// Esquemas armonizados: tanto PostgreSQL/Neon como el init.sql de MySQL usan las
+// columnas `codigo_usuario` y `contrasena_hash`. (Las ramas a `user_code`/`password`
+// correspondían a un esquema MySQL antiguo y rompían sobre el init.sql actual.)
+const userCodeCol = () => 'codigo_usuario';
+const passwordCol = () => 'contrasena_hash';
 
 class UserRepository extends IUserRepository {
   async listarUsuarios() {

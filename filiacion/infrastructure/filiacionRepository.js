@@ -1,18 +1,22 @@
+import { randomUUID } from 'crypto';
 import { IFiliacionRepository } from '../domain/filiacionDomain.js';
 import pool from '../../db/db.js';
 
 export class FiliacionRepository extends IFiliacionRepository {
   async create(agregado) {
     const values = agregado.obtenerParametros();
+    // La PK id_filiacion se genera en la app (randomUUID) en vez de depender del
+    // DEFAULT gen_random_uuid() de PostgreSQL, que no existe en MySQL. Así el
+    // INSERT es portable entre ambos motores (mismo patrón que patient/hc repos).
     await pool.query(
       `INSERT INTO filiacion (
-        id_historia, raza, fecha_nacimiento, lugar, estado_civil, nombre_conyuge,
+        id_filiacion, id_historia, raza, fecha_nacimiento, lugar, estado_civil, nombre_conyuge,
         ocupacion, lugar_procedencia, tiempo_residencia_tacna, direccion,
         ultima_visita_dentista, motivo_visita_dentista, ultima_visita_medico,
         motivo_visita_medico, contacto_emergencia, telefono_emergencia, acompaniante,
         edad, sexo, fecha_elaboracion
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)`,
-      values
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)`,
+      [randomUUID(), ...values]
     );
     return { success: true, id_historia: agregado.idHistoria };
   }

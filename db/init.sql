@@ -605,7 +605,7 @@ CREATE TABLE IF NOT EXISTS consentimiento_informado (
   FOREIGN KEY (id_usuario)  REFERENCES usuario(id_usuario) ON DELETE SET NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_consentimiento_historia
+CREATE INDEX idx_consentimiento_historia
   ON consentimiento_informado (id_historia, created_at);
 
 -- ============================================================
@@ -705,36 +705,36 @@ CREATE TABLE IF NOT EXISTS catalogo_habito            (id_habito      CHAR(36) N
 -- ============================================================
 
 -- Historia clínica: búsqueda por estudiante y estado
-CREATE INDEX IF NOT EXISTS idx_hc_estudiante ON historia_clinica (id_estudiante);
-CREATE INDEX IF NOT EXISTS idx_hc_estado     ON historia_clinica (estado);
-CREATE INDEX IF NOT EXISTS idx_hc_fecha      ON historia_clinica (fecha_elaboracion);
+CREATE INDEX idx_hc_estudiante ON historia_clinica (id_estudiante);
+CREATE INDEX idx_hc_estado     ON historia_clinica (estado);
+CREATE INDEX idx_hc_fecha      ON historia_clinica (fecha_elaboracion);
 
 -- Diagnóstico: búsqueda por historia y tipo
-CREATE INDEX IF NOT EXISTS idx_diagnostico_historia ON diagnostico (id_historia, tipo);
+CREATE INDEX idx_diagnostico_historia ON diagnostico (id_historia, tipo);
 
 -- Notificaciones: consultas frecuentes de bandeja
-CREATE INDEX IF NOT EXISTS idx_notif_destinatario ON notificacion (id_destinatario, leida, fecha);
+CREATE INDEX idx_notif_destinatario ON notificacion (id_destinatario, leida, fecha);
 
 -- Citas: verificación de solapamiento
-CREATE INDEX IF NOT EXISTS idx_cita_estudiante_fecha ON cita (id_estudiante, fecha_hora, estado);
+CREATE INDEX idx_cita_estudiante_fecha ON cita (id_estudiante, fecha_hora, estado);
 
 -- Auditoría: búsqueda por registro
-CREATE INDEX IF NOT EXISTS idx_audit_registro ON auditoria (id_registro_afectado, fecha_cambio);
+CREATE INDEX idx_audit_registro ON auditoria (id_registro_afectado, fecha_cambio);
 
 -- Odontograma: por historia y diente
-CREATE INDEX IF NOT EXISTS idx_odonto_historia ON odontograma_entrada (id_historia, numero_diente);
+CREATE INDEX idx_odonto_historia ON odontograma_entrada (id_historia, numero_diente);
 
 -- Odontograma: por hallazgo (reportes RF-12)
-CREATE INDEX IF NOT EXISTS idx_odonto_hallazgo ON odontograma_entrada (codigo_hallazgo);
+CREATE INDEX idx_odonto_hallazgo ON odontograma_entrada (codigo_hallazgo);
 
 -- IHO-S: por historia
-CREATE INDEX IF NOT EXISTS idx_ihos_historia ON iho_s (id_historia, created_at);
+CREATE INDEX idx_ihos_historia ON iho_s (id_historia, created_at);
 
 -- EPB: por historia
-CREATE INDEX IF NOT EXISTS idx_epb_historia ON epb (id_historia, created_at);
+CREATE INDEX idx_epb_historia ON epb (id_historia, created_at);
 
 -- Odontograma SVG: por historia y tipo, más reciente primero
-CREATE INDEX IF NOT EXISTS idx_odonto_svg_historia ON odontograma_svg (id_historia, tipo, created_at);
+CREATE INDEX idx_odonto_svg_historia ON odontograma_svg (id_historia, tipo, created_at);
 
 -- ============================================================
 -- SECCIÓN 16: DATOS SEMILLA
