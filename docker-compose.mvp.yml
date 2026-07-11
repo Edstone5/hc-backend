@@ -17,7 +17,10 @@ name: hc-mvp
 services:
   # ── Base de datos PostgreSQL ───────────────────────────────────────────────
   # Se inicializa en el primer arranque con el snapshot real del esquema del
-  # proyecto (52 tablas + datos de prueba: usuarios, pacientes, historias).
+  # proyecto (52 tablas + datos de prueba: usuarios, pacientes, historias) y,
+  # a continuación, con el mismo seed de demostración que MySQL (20-demo.sql):
+  # así la credencial 2023-000001 / esis123 funciona idéntica en AMBOS motores
+  # (login por navegador y verificador mvp/prueba_ruta_central.sh en :3000).
   db:
     image: postgres:16
     container_name: hc_mvp_db
@@ -29,6 +32,7 @@ services:
       - '5432:5432'
     volumes:
       - ./mvp/neon_snapshot.sql:/docker-entrypoint-initdb.d/10-snapshot.sql:ro
+      - ./mvp/demo_seed.sql:/docker-entrypoint-initdb.d/20-demo.sql:ro
       - hc_mvp_pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d hc']
