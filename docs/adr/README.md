@@ -21,6 +21,8 @@ la motivó, las opciones consideradas, la decisión tomada y sus consecuencias.
 | ADR-0006 | Módulo de Consentimiento Informado — estrategia de templates y persistencia (RF-09)         | Aceptado ✅ |
 | ADR-0007 | Mejora de exportación PDF — auditoría, header con usuario, paginación (RF-08)               | Aceptado ✅ |
 | ADR-0008 | Consolidación del Odontograma en Examen Físico — eliminación del link independiente (RF-06) | Aceptado ✅ |
+| …        | (ADR-0009 … ADR-0043)                                                                       | Aceptado ✅ |
+| ADR-0044 | Verificación en vivo de la portabilidad del puerto de persistencia (PostgreSQL↔MySQL)      | Aceptado ✅ |
 
 ---
 
