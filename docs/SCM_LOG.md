@@ -13,3 +13,5 @@ historial de _Releases_ del repositorio.
 | ID-Cambio | Commit  | Descripción                                | Autor            | Status Check CI | Fecha      | Baseline |
 | --------- | ------- | ------------------------------------------ | ---------------- | --------------- | ---------- | -------- |
 | RFC-107   | b75f14b | baseline v1.1.0 firmada gpg + bitácora scm | Edson Condemaita | ✅ passed       | 2026-06-11 | v1.1.0   |
+
+<!-- Evidencia Laboratorio Dual: PR de ejemplo (camino feliz) que pasa los checks y se aprueba antes de fusionar a main. -->
