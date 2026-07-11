@@ -1,0 +1,17 @@
+# El build de la imagen NO debe llevar node_modules del host (Windows): la imagen
+# es Alpine/musl y compila sus propios binarios nativos (argon2). Tampoco secretos.
+node_modules
+npm-debug.log*
+.git
+.gitignore
+.env
+.env.local
+.env.test
+coverage
+.nyc_output
+.github
+Dockerfile
+.dockerignore
+docker-compose*.yml
+mvp
+*.log

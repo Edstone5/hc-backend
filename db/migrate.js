@@ -1,12 +1,16 @@
 /**
- * Runner de migraciones del odontograma NTS N° 150 (migraciones 002-005).
+ * Runner de migraciones incrementales del backend (001-007), dialect-aware.
  *
- * Aplica de una sola vez, sobre una BD ya inicializada (init.sql), los cambios
- * de los Bloques 1-5:
+ * Aplica de una sola vez, sobre una BD base ya inicializada (hc-db
+ * deploy_full.sql en PostgreSQL o init.sql en MySQL), las migraciones del
+ * backend:
+ *   001 — tabla consentimiento_informado (RF-09)
  *   002 — columna `tipo` en odontograma_entrada + tabla odontograma_svg
  *   003 — columna `codigo_hallazgo` en odontograma_entrada
  *   004 — tabla iho_s (IHO-S)
  *   005 — tabla epb (Examen Periodontal Básico)
+ *   006 — tabla refresh_token (rotación/revocación, ADR-0028)
+ *   007 — tabla informe_final (RF-13, ADR-0042)
  *
  * Es DIALECT-AWARE (MySQL / PostgreSQL, según DATABASE_URL en db.js) e
  * IDEMPOTENTE: tolera los errores de "ya existe" para poder re-ejecutarse sin
@@ -49,6 +53,28 @@ function esYaExiste(err) {
 
 // Migraciones como lista de pasos {nombre, sql}.
 const PASOS = [
+  // ── 001: consentimiento_informado (RF-09) ─────────────────────────────────
+  {
+    nombre: '001 · tabla consentimiento_informado',
+    sql: `CREATE TABLE IF NOT EXISTS consentimiento_informado (
+            id_consentimiento    ${IDT}       NOT NULL PRIMARY KEY,
+            id_historia          ${IDT}       NOT NULL,
+            tipo_template        VARCHAR(50)  NOT NULL${C('adulto_general|cirugia_oral|menor_de_edad|anestesia_local')},
+            nombre_paciente      VARCHAR(300) NOT NULL,
+            nombre_responsable   VARCHAR(300) NULL${C('Para menor_de_edad: padre/madre/tutor')},
+            fecha_consentimiento DATE         NOT NULL ${DEF_DATE},
+            firmado              BOOLEAN      NOT NULL DEFAULT FALSE${C('Reservado para firma digital (Fase 2)')},
+            id_usuario           ${IDT}       NULL${C('Usuario que registró el consentimiento')},
+            created_at           ${DT}        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (id_historia) REFERENCES historia_clinica(id_historia) ON DELETE CASCADE,
+            FOREIGN KEY (id_usuario)  REFERENCES usuario(id_usuario) ON DELETE SET NULL
+          )`,
+  },
+  {
+    nombre: '001 · idx_consentimiento_historia',
+    sql: `CREATE INDEX idx_consentimiento_historia ON consentimiento_informado (id_historia, created_at)`,
+  },
+
   // ── 002: tipo + odontograma_svg ──────────────────────────────────────────
   {
     nombre: '002 · odontograma_entrada.tipo',
@@ -146,12 +172,30 @@ const PASOS = [
     nombre: '006 · idx_refresh_usuario',
     sql: `CREATE INDEX idx_refresh_usuario ON refresh_token (id_usuario)`,
   },
+
+  // ── 007: informe_final (RF-13, ADR-0042) ──────────────────────────────────
+  {
+    nombre: '007 · tabla informe_final',
+    sql: `CREATE TABLE IF NOT EXISTS informe_final (
+            id_informe       ${IDT}        NOT NULL PRIMARY KEY,
+            id_historia      ${IDT}        NOT NULL,
+            generado_por     ${IDT}        NOT NULL${C('Estudiante que generó el informe')},
+            estado           VARCHAR(20)   NOT NULL DEFAULT 'generado'${C('generado | enviado_validacion | validado')},
+            secciones        ${TEXT_LARGE} NOT NULL${C('Contenido compilado del informe (JSON)')},
+            fecha_generacion ${DT}         NOT NULL,
+            created_at       ${DT}         NOT NULL DEFAULT CURRENT_TIMESTAMP
+          )`,
+  },
+  {
+    nombre: '007 · idx_informe_final_historia',
+    sql: `CREATE INDEX idx_informe_final_historia ON informe_final (id_historia)`,
+  },
 ];
 
 async function migrar() {
   await testConnection();
   console.log(
-    `\n▶ Aplicando migraciones odontograma NTS-150 (dialecto: ${pool.dialect})\n`
+    `\n▶ Aplicando migraciones del backend 001-007 (dialecto: ${pool.dialect})\n`
   );
 
   let aplicados = 0;

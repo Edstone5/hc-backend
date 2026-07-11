@@ -45,9 +45,14 @@ if (isMysql) {
   };
 } else {
   const { Pool } = pg;
+  // SSL solo cuando el destino lo exige (Neon/nube usa sslmode=require). Un
+  // PostgreSQL local (Docker, hc-db) no habla SSL, así que para él se desactiva.
+  // Así `npm run dev` contra Neon sigue igual y el compose local funciona.
+  const requiereSSL =
+    /sslmode=require/i.test(DB_URL) || /\.neon\.tech/i.test(DB_URL);
   const pgPool = new Pool({
     connectionString: DB_URL,
-    ssl: { rejectUnauthorized: false },
+    ssl: requiereSSL ? { rejectUnauthorized: false } : false,
     max: 10,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,

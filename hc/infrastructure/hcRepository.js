@@ -62,7 +62,7 @@ class HcRepository extends IHcRepository {
     const id = randomUUID();
     await pool.query(
       `INSERT INTO historia_clinica (id_historia, id_estudiante, estado)
-       VALUES ($1, $2, 'activo')`,
+       VALUES ($1, $2, 'en_proceso')`,
       [id, idEstudiante]
     );
     const result = await pool.query(
@@ -100,8 +100,11 @@ class HcRepository extends IHcRepository {
 
   async asignarPaciente(agregado) {
     const [idHistoria, idPaciente] = agregado.obtenerParametros();
+    // 'en_proceso' es el estado del dominio (validado por chk_historia_clinica_estado
+    // en PostgreSQL y renderizado con badge propio en el frontend). Antes se usaba
+    // 'activo', que violaba el CHECK y no estaba mapeado en la UI.
     await pool.query(
-      `UPDATE historia_clinica SET id_paciente = $1, estado = 'activo' WHERE id_historia = $2`,
+      `UPDATE historia_clinica SET id_paciente = $1, estado = 'en_proceso' WHERE id_historia = $2`,
       [idPaciente, idHistoria]
     );
     return true;
@@ -125,11 +128,24 @@ class HcRepository extends IHcRepository {
       params.push(parseInt(year));
     }
     if (q) {
+      // Portabilidad de dialecto: PostgreSQL usa ILIKE (case-insensitive) y
+      // CAST(... AS VARCHAR); MySQL usa LIKE (ya case-insensitive con la
+      // colación por defecto) y CAST(... AS CHAR).
+      const likeOp = pool.dialect === 'mysql' ? 'LIKE' : 'ILIKE';
+      const idCast =
+        pool.dialect === 'mysql'
+          ? 'CAST(h.id_historia AS CHAR)'
+          : 'CAST(h.id_historia AS VARCHAR)';
+      // Un placeholder DISTINTO por columna y el patrón empujado 4 veces. PostgreSQL
+      // permite reutilizar $N, pero el conversor $N→? de MySQL es posicional: si se
+      // repite $idx, quedan más `?` que parámetros ("Incorrect arguments to
+      // COM_STMT_EXECUTE"). Con 4 placeholders + 4 params funciona en ambos motores.
+      const like = `%${q}%`;
       condiciones.push(
-        `(CAST(h.id_historia AS VARCHAR) ILIKE $${idx} OR p.nombre ILIKE $${idx} OR p.apellido ILIKE $${idx} OR p.dni ILIKE $${idx})`
+        `(${idCast} ${likeOp} $${idx} OR p.nombre ${likeOp} $${idx + 1} OR p.apellido ${likeOp} $${idx + 2} OR p.dni ${likeOp} $${idx + 3})`
       );
-      params.push(`%${q}%`);
-      idx++;
+      params.push(like, like, like, like);
+      idx += 4;
     }
 
     const where = condiciones.length

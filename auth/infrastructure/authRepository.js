@@ -9,9 +9,11 @@ import pool from '../../db/db.js';
 class AuthRepository extends IAuthRepository {
   async obtenerUsuarioPorUserCode(agregado) {
     const [userCode] = agregado.obtenerParametros();
-    const col = pool.dialect === 'mysql' ? 'user_code' : 'codigo_usuario';
+    // Esquemas armonizados: tanto PostgreSQL/Neon como el init.sql de MySQL usan
+    // la columna `codigo_usuario`. (Antes se ramificaba a `user_code` para MySQL,
+    // pero ese nombre quedó obsoleto y rompía el login sobre MySQL.)
     const result = await pool.query(
-      `SELECT * FROM usuario WHERE ${col} = $1 LIMIT 1`,
+      `SELECT * FROM usuario WHERE codigo_usuario = $1 LIMIT 1`,
       [userCode]
     );
     return result.rows[0] || null;
