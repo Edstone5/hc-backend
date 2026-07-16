@@ -74,6 +74,8 @@ export default {
 
     // Máximo 100 caracteres en el header
     'header-max-length': [2, 'always', 100],
+    // Espacios al final del header solo emiten warning (no bloquean CI)
+    'header-trim': [1, 'always'],
 
     // Footer optional (no bloquea si falta)
     'references-empty': [0, 'always'],
