@@ -17,19 +17,25 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(
-  cors({
-    origin: [
-      'http://localhost:5173',
-      'https://edstone5.github.io',
-      'https://hc-frontend-18qd.onrender.com',
-      'http://161.132.4.46',
-      'http://unjbghc.duckdns.org',
-      'https://unjbghc.duckdns.org',
-    ],
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: [
+    'http://localhost:5173',
+    'https://edstone5.github.io',
+    'https://hc-frontend-18qd.onrender.com',
+    'http://161.132.4.46',
+    'http://unjbghc.duckdns.org',
+    'https://unjbghc.duckdns.org',
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Length'],
+  maxAge: 86400,
+};
+
+app.use(cors(corsOptions));
+// Manejar explícitamente solicitudes OPTIONS (preflight)
+app.options('*', cors(corsOptions));
 
 app.use(cookieParser());
 
