@@ -22,6 +22,7 @@ app.use(
     origin: [
       'http://localhost:5173',
       'https://edstone5.github.io',
+      'https://hc-frontend-18qd.onrender.com',
       'http://161.132.4.46',
       'http://unjbghc.duckdns.org',
       'https://unjbghc.duckdns.org',
