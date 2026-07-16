@@ -2,7 +2,9 @@ export class CookieService {
   static setTokenCookies(res, accessToken, refreshToken) {
     const cookieOptions = {
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      // Use SameSite=None so cookies are accepted on cross-site XHR/fetch.
+      // In production ensure `secure: true` and HTTPS so browsers accept SameSite=None.
+      sameSite: 'None',
       secure: process.env.NODE_ENV === 'production',
       path: '/',
     };
