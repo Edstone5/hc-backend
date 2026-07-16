@@ -37,7 +37,6 @@ app.use(cors(corsOptions));
 // Manejar explícitamente solicitudes OPTIONS (preflight)
 app.options('*', cors(corsOptions));
 
-
 app.use(cookieParser());
 
 app.disable('x-powered-by');
