@@ -14,7 +14,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "prepare": "husky",
+    "prepare": "husky || true",
     "start": "node --import ./tracing.js api.js",
     "start:notrace": "node api.js",
     "start:prod": "NODE_ENV=production node --import ./tracing.js api.js",
